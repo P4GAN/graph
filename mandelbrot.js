@@ -13,6 +13,38 @@ let angle = 0;
 let translationX = 0;
 let translationY = 0;
 
+let vertexShaderSource = document.getElementById("vertex-shader-2d").text;
+let fragmentShaderSource = document.getElementById("fragment-shader-2d").text;
+ 
+let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+let program = createProgram(gl, vertexShader, fragmentShader);
+
+let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+let matrixLocation = gl.getUniformLocation(program, "u_matrix");
+
+let positionBuffer = gl.createBuffer();
+
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+// three 2d points
+let positions = [
+    /*0.0, 0.0,
+    0.0, 5.0,
+    5.0, 0,*/
+
+    -10, -10,
+    -10, 10,
+    10, -10,
+    -10, 10,
+    10, 10,
+    10, -10,
+
+];
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+
 function getCameraMatrix() {
     /*transformation should be
 
@@ -56,38 +88,6 @@ function createProgram(gl, vertexShader, fragmentShader) {
     console.error(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
 }
-
-
-let vertexShaderSource = document.getElementById("vertex-shader-2d").text;
-let fragmentShaderSource = document.getElementById("fragment-shader-2d").text;
- 
-let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-
-let program = createProgram(gl, vertexShader, fragmentShader);
-
-let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-let matrixLocation = gl.getUniformLocation(program, "u_matrix");
-
-let positionBuffer = gl.createBuffer();
-
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-// three 2d points
-let positions = [
-    /*0.0, 0.0,
-    0.0, 5.0,
-    5.0, 0,*/
-
-    -10, -10,
-    -10, 10,
-    10, -10,
-    -10, 10,
-    10, 10,
-    10, -10,
-
-];
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
 function draw() {
     gl.viewport(0, 0, canvas.width, canvas.height);

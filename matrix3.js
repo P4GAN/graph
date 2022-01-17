@@ -36,11 +36,13 @@ function rotation(angle) {
     =  [x * cos(a) - y * sin(a) + 1 * 0,
         x * sin(a) + y * cos(a) + 1 * 0,
         x * 0 + y * 0 + 1 * 1]
+    =  [x * cos(a) - y * sin(a), x * sin(a) + y * cos(a), 1]
+    = rotated vector
 
     */
 }
 
-//translation matrix translates vector tx units in x direction and ty units in y direction
+//scaling matrix scales vector sx units in x direction, sy units in y direction
 function scaling(sx, sy) {
     return [
         sx, 0, 0,
@@ -62,18 +64,18 @@ function scaling(sx, sy) {
 function projection(width, height) {
     return [
         2 / width, 0, 0,
-        0, -2 / height, 0,
-        -1, 1, 1,
+        0, 2 / height, 0,
+        -1, -1, 1,
     ]
     /*
     Explanation
     matrix.projection(w, h) * [x, y, 1] 
-    =  [x / w + y * 0 + -1 * 1, 
-        x * 0 + y / h + -1 * 1, 
+    =  [2 * x / w + y * 0 + -1 * 1, 
+        x * 0 + 2 * y / h + -1 * 1, 
         x * 0 + y * 0 + 1 * 1]
 
-    = [x / w - 1, y / h - 1, 1]
-    converts to screen coords of -1, 1
+    = [2 * x / w - 1, 2 * y / h - 1, 1]
+    converts [0, w], [0, h] to screen coords of [-1, 1]
     */
 }
 
