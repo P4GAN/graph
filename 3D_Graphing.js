@@ -20,7 +20,7 @@ let translationX = 0;
 let translationY = 0;
 let translationZ = 0;
 
-let isovalue = 1;
+let isovalue = 0;
 
 let vertexPositions = [
     [0, 0, 0],
@@ -335,7 +335,7 @@ let positionBuffer = gl.createBuffer();
 
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-let positions = marchingSquares3D(-10, 10, -10, 10, -10, 10, 1);
+let positions = marchingSquares3D(-10, 10, -10, 10, -10, 10, 0.05);
 
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
@@ -631,7 +631,7 @@ function degreesToRadians(d) {
 }
 
 function fieldValue(x, y, z) {
-    return x * x + y * y + z * z;
+    return z - 3 * Math.pow(Math.E, -(2 * x * x + 3 * y * y - x * y)/3)
 }
 
 
@@ -682,9 +682,11 @@ function createProgram(gl, vertexShader, fragmentShader) {
     gl.deleteProgram(program);
 }
 
-//gets edge and returns middle vertex
-function edgeMiddleVertex(edge) {
-    return [(vertexPositions[edge[0]][0] + vertexPositions[edge[1]][0]) / 2, (vertexPositions[edge[0]][1] + vertexPositions[edge[1]][1]) / 2, (vertexPositions[edge[0]][2] + vertexPositions[edge[1]][2]) / 2 ];
+//gets edge of cube with x, y, z position and returns middle vertex
+function edgeMiddleVertex(edge, x, y, z) {
+    return [x + (vertexPositions[edge[0]][0] + vertexPositions[edge[1]][0]) / 2, 
+            y + (vertexPositions[edge[0]][1] + vertexPositions[edge[1]][1]) / 2, 
+            z + (vertexPositions[edge[0]][2] + vertexPositions[edge[1]][2]) / 2 ];
 }
 
 function marchingSquares3D(startX, endX, startY, endY, startZ, endZ, cubeSize) {
@@ -712,18 +714,19 @@ function marchingSquares3D(startX, endX, startY, endY, startZ, endZ, cubeSize) {
                 let cubeType = 0;
 
                 for (let i = 0; i < 8; i++) {
-                    let vertex = vertexPositions[i]
-                    if (fieldValue(vertex[0], vertex[1], vertex[1]) >= isovalue) {
+                    let vertex = [vertexPositions[i][0] + x, vertexPositions[i][1] + y, vertexPositions[i][2] + z];
+                    if (fieldValue(vertex[0], vertex[1], vertex[2]) >= isovalue) {
                         cubeType += Math.pow(2, i);
+
                     }
                 }
-
+                
                 trianglePoints = triangulationTable[cubeType];
 
-                for (triangleIndex = 0; triangleIndex < trianglePoints.length; triangleIndex += 3) {
-                    trianglePositions.push(...edgeMiddleVertex(edges[triangleIndex]))
-                    trianglePositions.push(...edgeMiddleVertex(edges[triangleIndex + 1]))
-                    trianglePositions.push(...edgeMiddleVertex(edges[triangleIndex + 2]))
+                for (let triangleIndex = 0; triangleIndex < trianglePoints.length; triangleIndex += 3) {
+                    trianglePositions.push(...edgeMiddleVertex(edges[trianglePoints[triangleIndex]], x, y, z))
+                    trianglePositions.push(...edgeMiddleVertex(edges[trianglePoints[triangleIndex + 1]], x, y, z))
+                    trianglePositions.push(...edgeMiddleVertex(edges[trianglePoints[triangleIndex + 2]], x, y, z))
                 }
 
             }
@@ -738,8 +741,8 @@ function draw() {
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
-    gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+    //gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+    //gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
   
     // Clear the canvas before we start drawing on it.
   
@@ -781,7 +784,7 @@ function draw() {
     gl.uniformMatrix4fv(matrixLocation, false, getCameraMatrix())
 
     let primitiveType = gl.TRIANGLES;
-    let count = 41154;
+    let count = positions.length / 3;
     gl.drawArrays(primitiveType, offset, count);
 
     requestAnimationFrame(draw);
