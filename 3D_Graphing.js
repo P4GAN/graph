@@ -20,7 +20,14 @@ let translationX = 0;
 let translationY = 0;
 let translationZ = 0;
 
-let isovalue = 0;
+//spherical coordinates of camera
+let radius = 100;
+let theta = 0;
+let phi = 0;
+
+let cameraPosition = [0, 0, 100];
+
+let isovalue = 25;
 
 let vertexPositions = [
     [0, 0, 0],
@@ -307,6 +314,11 @@ let triangulationTable = [
     []
 ];
 
+/*
+document.getElementById("angleTheta").oninput = function() { theta = this.value; }
+document.getElementById("anglePhi").oninput = function() { phi = this.value; }
+document.getElementById("radius").oninput = function() { radius = this.value; }
+
 document.getElementById("scaleX").oninput = function() { scaleX = this.value; }
 document.getElementById("scaleY").oninput = function() { scaleY = this.value; }
 document.getElementById("scaleZ").oninput = function() { scaleZ = this.value; }
@@ -316,7 +328,7 @@ document.getElementById("angleZ").oninput = function() { angleZ = this.value; }
 document.getElementById("translationX").oninput = function() { translationX = this.value; }
 document.getElementById("translationY").oninput = function() { translationY = this.value; }
 document.getElementById("translationZ").oninput = function() { translationZ = this.value; }
-
+*/
 
 let vertexShaderSource = document.getElementById("vertex-shader-3d").text;
 let fragmentShaderSource = document.getElementById("fragment-shader-3d").text;
@@ -328,299 +340,42 @@ let program = createProgram(gl, vertexShader, fragmentShader);
 
 let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
 let colorAttributeLocation = gl.getAttribLocation(program, "a_color");
+let normalAttributeLocation = gl.getAttribLocation(program, "a_normal")
 
 let matrixLocation = gl.getUniformLocation(program, "u_matrix");
 
+let reverseLightDirectionLocation = gl.getUniformLocation(program, "u_reverseLightDirection")
+
+let marchingCubes = marchingCubes3D(-20, 20, -20, 20, -20, 20, 1);
+
+//positions
 let positionBuffer = gl.createBuffer();
 
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-let positions = marchingSquares3D(-10, 10, -10, 10, -10, 10, 0.05);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.trianglePositions), gl.STATIC_DRAW);
 
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-/*
-let positions = [
-    // left column front
-    0,   0,  0,
-    0, 150,  0,
-    30,   0,  0,
-    0, 150,  0,
-    30, 150,  0,
-    30,   0,  0,
-
-    // top rung front
-    30,   0,  0,
-    30,  30,  0,
-    100,   0,  0,
-    30,  30,  0,
-    100,  30,  0,
-    100,   0,  0,
-
-    // middle rung front
-    30,  60,  0,
-    30,  90,  0,
-    67,  60,  0,
-    30,  90,  0,
-    67,  90,  0,
-    67,  60,  0,
-
-    // left column back
-      0,   0,  30,
-     30,   0,  30,
-      0, 150,  30,
-      0, 150,  30,
-     30,   0,  30,
-     30, 150,  30,
-
-    // top rung back
-     30,   0,  30,
-    100,   0,  30,
-     30,  30,  30,
-     30,  30,  30,
-    100,   0,  30,
-    100,  30,  30,
-
-    // middle rung back
-     30,  60,  30,
-     67,  60,  30,
-     30,  90,  30,
-     30,  90,  30,
-     67,  60,  30,
-     67,  90,  30,
-
-    // top
-      0,   0,   0,
-    100,   0,   0,
-    100,   0,  30,
-      0,   0,   0,
-    100,   0,  30,
-      0,   0,  30,
-
-    // top rung right
-    100,   0,   0,
-    100,  30,   0,
-    100,  30,  30,
-    100,   0,   0,
-    100,  30,  30,
-    100,   0,  30,
-
-    // under top rung
-    30,   30,   0,
-    30,   30,  30,
-    100,  30,  30,
-    30,   30,   0,
-    100,  30,  30,
-    100,  30,   0,
-
-    // between top rung and middle
-    30,   30,   0,
-    30,   60,  30,
-    30,   30,  30,
-    30,   30,   0,
-    30,   60,   0,
-    30,   60,  30,
-
-    // top of middle rung
-    30,   60,   0,
-    67,   60,  30,
-    30,   60,  30,
-    30,   60,   0,
-    67,   60,   0,
-    67,   60,  30,
-
-    // right of middle rung
-    67,   60,   0,
-    67,   90,  30,
-    67,   60,  30,
-    67,   60,   0,
-    67,   90,   0,
-    67,   90,  30,
-
-    // bottom of middle rung.
-    30,   90,   0,
-    30,   90,  30,
-    67,   90,  30,
-    30,   90,   0,
-    67,   90,  30,
-    67,   90,   0,
-
-    // right of bottom
-    30,   90,   0,
-    30,  150,  30,
-    30,   90,  30,
-    30,   90,   0,
-    30,  150,   0,
-    30,  150,  30,
-
-    // bottom
-    0,   150,   0,
-    0,   150,  30,
-    30,  150,  30,
-    0,   150,   0,
-    30,  150,  30,
-    30,  150,   0,
-
-    // left side
-    0,   0,   0,
-    0,   0,  30,
-    0, 150,  30,
-    0,   0,   0,
-    0, 150,  30,
-    0, 150,   0];
-
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
+//colors
 let colorBuffer = gl.createBuffer();
 
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 
-let colors = [
-    // left column front
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
+gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(marchingCubes.colors), gl.STATIC_DRAW);
 
-    // top rung front
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
+//normals
+let normalBuffer = gl.createBuffer();
 
-    // middle rung front
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
-  200,  70, 120,
+gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
 
-    // left column back
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
 
-    // top rung back
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
+//returns normal vector to triangle given 3 vector corners
+function triangleNormal(a, b, c) {
+    edgeAB = subtract(b, a);
+    edgeBC = subtract(c, a);
 
-    // middle rung back
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-  80, 70, 200,
-
-    // top
-  70, 200, 210,
-  70, 200, 210,
-  70, 200, 210,
-  70, 200, 210,
-  70, 200, 210,
-  70, 200, 210,
-
-    // top rung right
-  200, 200, 70,
-  200, 200, 70,
-  200, 200, 70,
-  200, 200, 70,
-  200, 200, 70,
-  200, 200, 70,
-
-    // under top rung
-  210, 100, 70,
-  210, 100, 70,
-  210, 100, 70,
-  210, 100, 70,
-  210, 100, 70,
-  210, 100, 70,
-
-    // between top rung and middle
-  210, 160, 70,
-  210, 160, 70,
-  210, 160, 70,
-  210, 160, 70,
-  210, 160, 70,
-  210, 160, 70,
-
-    // top of middle rung
-  70, 180, 210,
-  70, 180, 210,
-  70, 180, 210,
-  70, 180, 210,
-  70, 180, 210,
-  70, 180, 210,
-
-    // right of middle rung
-  100, 70, 210,
-  100, 70, 210,
-  100, 70, 210,
-  100, 70, 210,
-  100, 70, 210,
-  100, 70, 210,
-
-    // bottom of middle rung.
-  76, 210, 100,
-  76, 210, 100,
-  76, 210, 100,
-  76, 210, 100,
-  76, 210, 100,
-  76, 210, 100,
-
-    // right of bottom
-  140, 210, 80,
-  140, 210, 80,
-  140, 210, 80,
-  140, 210, 80,
-  140, 210, 80,
-  140, 210, 80,
-
-    // bottom
-  90, 130, 110,
-  90, 130, 110,
-  90, 130, 110,
-  90, 130, 110,
-  90, 130, 110,
-  90, 130, 110,
-
-    // left side
-  160, 160, 220,
-  160, 160, 220,
-  160, 160, 220,
-  160, 160, 220,
-  160, 160, 220,
-  160, 160, 220];
-
-gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW);
-
-*/
-
-let colorBuffer = gl.createBuffer();
-
-gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-
-let colors = [];
-
-for (let i = 0; i < positions.length; i++) {
-    colors.push(200);
+    return normalizeVector(cross(edgeBC, edgeAB));
 }
-
-gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW);
-
-
 
 function radiansToDegrees(r) {
     return r * 180 / Math.PI;
@@ -631,26 +386,40 @@ function degreesToRadians(d) {
 }
 
 function fieldValue(x, y, z) {
-    return z - 3 * Math.pow(Math.E, -(2 * x * x + 3 * y * y - x * y)/3)
+    //return z * z + (10 - Math.sqrt(x * x + y * y)) * (10 - Math.sqrt(x * x + y * y));
+    return z * z - x * x - y * y;
 }
 
-
-function getCameraMatrix() {
+/*function getWorldMatrix() {
     /*transformation should be
 
-    vector * scaling * rotation * translation * projection
+    vector * scaling * rotation * translation
 
-    aka [projection][translation][rotation][scaling][vector]
+    aka [translation][rotation][scaling][vector]
 
     therefore this is order of multiplication
-    */
-    let cameraMatrix = perspective(Math.PI / 3, aspect, 1, 2000);
-    cameraMatrix = multiply(cameraMatrix, translation(translationX, translationY, translationZ));
-    cameraMatrix = multiply(cameraMatrix, rotationX(angleX));
-    cameraMatrix = multiply(cameraMatrix, rotationY(angleY));
-    cameraMatrix = multiply(cameraMatrix, rotationZ(angleZ));
-    cameraMatrix = multiply(cameraMatrix, scaling(scaleX, scaleY, scaleZ));
-    return cameraMatrix;
+    
+    let worldMatrix = multiply(identity(), translation(translationX, translationY, translationZ));
+    worldMatrix = multiply(worldMatrix, rotationX(angleX));
+    worldMatrix = multiply(worldMatrix, rotationY(angleY));
+    worldMatrix = multiply(worldMatrix, rotationZ(angleZ));
+    worldMatrix = multiply(worldMatrix, scaling(scaleX, scaleY, scaleZ));
+
+    return worldMatrix;
+}*/
+
+function getCameraPosition() {
+    return [radius * Math.cos(theta) * Math.cos(phi), radius * Math.sin(theta), radius * Math.cos(theta) * Math.sin(phi)]
+}
+
+function getCameraMatrix() {
+    let projectionMatrix = perspective(Math.PI / 3, aspect, 1, 2000);
+
+    cameraPosition = getCameraPosition();
+
+    let cameraMatrix = lookAt(cameraPosition, [0, 0, 0])
+
+    return multiply(projectionMatrix, inverse(cameraMatrix, 4));
 }
 
 function createShader(gl, type, source) {
@@ -682,15 +451,39 @@ function createProgram(gl, vertexShader, fragmentShader) {
     gl.deleteProgram(program);
 }
 
-//gets edge of cube with x, y, z position and returns middle vertex
-function edgeMiddleVertex(edge, x, y, z) {
-    return [x + (vertexPositions[edge[0]][0] + vertexPositions[edge[1]][0]) / 2, 
-            y + (vertexPositions[edge[0]][1] + vertexPositions[edge[1]][1]) / 2, 
-            z + (vertexPositions[edge[0]][2] + vertexPositions[edge[1]][2]) / 2 ];
+//y1 and y2 are low and high values of output
+//x1 and x2 are low and high values of input
+//takes input x and interpolates output
+function interpolate(y1, y2, x1, x2, x) {
+    //error check to prevent division by 0
+    //if x1 is close to x2, input range is small so output y1
+    if (Math.abs(x1 - x2) <= 0.00001) {
+        return (y1);
+    }
+    return (y1 + (y2 - y1) * ((x - x1)/(x2 - x1)));
 }
 
-function marchingSquares3D(startX, endX, startY, endY, startZ, endZ, cubeSize) {
-    let trianglePositions = [];
+//gets edge AB of cube with x, y, z position and returns interpolated middle vertex based on fieldValues
+function edgeMiddleVertex(edge, x, y, z, cubeSize) {
+    let valueA = fieldValue(vertexPositions[edge[0]][0] * cubeSize + x, vertexPositions[edge[0]][1] * cubeSize + y, vertexPositions[edge[0]][2] * cubeSize + z);
+    let valueB = fieldValue(vertexPositions[edge[1]][0] * cubeSize + x, vertexPositions[edge[1]][1] * cubeSize + y, vertexPositions[edge[1]][2] * cubeSize + z);
+
+    return [x + cubeSize * interpolate(vertexPositions[edge[0]][0], vertexPositions[edge[1]][0], valueA, valueB, isovalue), 
+            y + cubeSize * interpolate(vertexPositions[edge[0]][1], vertexPositions[edge[1]][1], valueA, valueB, isovalue), 
+            z + cubeSize * interpolate(vertexPositions[edge[0]][2], vertexPositions[edge[1]][2], valueA, valueB, isovalue)];
+    /*
+        return [x + cubeSize * (vertexPositions[edge[0]][0] + vertexPositions[edge[1]][0]) / 2, 
+                y + cubeSize * (vertexPositions[edge[0]][1] + vertexPositions[edge[1]][1]) / 2, 
+                z + cubeSize * (vertexPositions[edge[0]][2] + vertexPositions[edge[1]][2]) / 2 ];
+    */
+
+}
+
+
+function marchingCubes3D(startX, endX, startY, endY, startZ, endZ, cubeSize) {
+    let trianglePositions = []; 
+    let colors = [];
+    let normals = [];
 
     for (let x = startX; x < endX - cubeSize; x += cubeSize) {
         for (let y = startY; y < endY - cubeSize; y += cubeSize) {
@@ -714,40 +507,51 @@ function marchingSquares3D(startX, endX, startY, endY, startZ, endZ, cubeSize) {
                 let cubeType = 0;
 
                 for (let i = 0; i < 8; i++) {
-                    let vertex = [vertexPositions[i][0] + x, vertexPositions[i][1] + y, vertexPositions[i][2] + z];
+                    let vertex = [vertexPositions[i][0] * cubeSize + x, vertexPositions[i][1] * cubeSize + y, vertexPositions[i][2] * cubeSize + z];
                     if (fieldValue(vertex[0], vertex[1], vertex[2]) >= isovalue) {
                         cubeType += Math.pow(2, i);
-
                     }
                 }
                 
-                trianglePoints = triangulationTable[cubeType];
-
+                let trianglePoints = triangulationTable[cubeType];
                 for (let triangleIndex = 0; triangleIndex < trianglePoints.length; triangleIndex += 3) {
-                    trianglePositions.push(...edgeMiddleVertex(edges[trianglePoints[triangleIndex]], x, y, z))
-                    trianglePositions.push(...edgeMiddleVertex(edges[trianglePoints[triangleIndex + 1]], x, y, z))
-                    trianglePositions.push(...edgeMiddleVertex(edges[trianglePoints[triangleIndex + 2]], x, y, z))
+                    let a = edgeMiddleVertex(edges[trianglePoints[triangleIndex]], x, y, z, cubeSize);
+                    let b = edgeMiddleVertex(edges[trianglePoints[triangleIndex + 1]], x, y, z, cubeSize);
+                    let c = edgeMiddleVertex(edges[trianglePoints[triangleIndex + 2]], x, y, z, cubeSize);
+                    trianglePositions.push(...a);
+                    trianglePositions.push(...b);
+                    trianglePositions.push(...c);
+
+                    colors.push(0, 200, 0, 0, 200, 0, 0, 200, 0);
+
+                    let normalVector = triangleNormal(a, b, c)
+                    normals.push(...normalVector, ...normalVector, ...normalVector)
                 }
 
             }
         }
     }
 
-    return trianglePositions;
+    let marchingCubesResult = { "trianglePositions": trianglePositions, "colors": colors, "normals": normals }
+    return marchingCubesResult;
 }
 
 function draw() {
     gl.viewport(0, 0, canvas.width, canvas.height);
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     //gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-    //gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
   
     // Clear the canvas before we start drawing on it.
   
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   
+    //gl.enable(gl.CULL_FACE);
+
+    gl.enable(gl.DEPTH_TEST);
+
     gl.useProgram(program);
 
     //position
@@ -757,7 +561,7 @@ function draw() {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
     // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-    let size = 3;          // 2 components per iteration
+    let size = 3;          // 3 components per iteration
     let type = gl.FLOAT;   // the data is 32bit floats
     let normalize = false; // don't normalize the data
     let stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
@@ -781,10 +585,26 @@ function draw() {
 
     gl.vertexAttribPointer(colorAttributeLocation, size, type, normalize, stride, offset)
 
+    //normals
+
+    gl.enableVertexAttribArray(normalAttributeLocation);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+
+    // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+    size = 3;          // 3 components per iteration
+    type = gl.FLOAT;   // the data is 32bit floats
+    normalize = false; // don't normalize the data
+    stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    offset = 0;        // start at the beginning of the buffer
+    
+    gl.vertexAttribPointer(normalAttributeLocation, size, type, normalize, stride, offset)
+
     gl.uniformMatrix4fv(matrixLocation, false, getCameraMatrix())
+    gl.uniform3fv(reverseLightDirectionLocation, normalizeVector([-cameraPosition[0], -cameraPosition[1], -cameraPosition[2]]));
 
     let primitiveType = gl.TRIANGLES;
-    let count = positions.length / 3;
+    let count = marchingCubes.trianglePositions.length / 3;
     gl.drawArrays(primitiveType, offset, count);
 
     requestAnimationFrame(draw);
@@ -793,33 +613,15 @@ function draw() {
 canvas.addEventListener("wheel", function(event) {
     event.preventDefault();
 
-    let rect = canvas.getBoundingClientRect();
-
-    let mouseX = event.offsetX
-    let mouseY = event.offsetY;
-
-    let [clipX, clipY] = transformVector(projection(canvas.width, canvas.height), [mouseX, mouseY, 1]);
-    //console.log(clipX, clipY)
-    let [x, y] = transformVector(inverse(getCameraMatrix()), [clipX, clipY, 1])
-
     let zoomScale = 1;
-    if (event.deltaY < 0) {
+    if (event.deltaY > 0) {
         zoomScale = 1.1 
     }
-    else if (event.deltaY > 0){
+    else if (event.deltaY < 0){
         zoomScale = 0.9
     }
-    scaleX *= zoomScale;
-    scaleX = Math.max(0, scaleX);
-    scaleY *= zoomScale;
-    scaleY = Math.max(0, scaleY);
-
-    let [newX, newY] = transformVector(inverse(getCameraMatrix()), [clipX, clipY, 1])
-
-    translationX += newX - x;
-    translationY += newY - y ;
-
-    console.log(scaleX);
+    radius *= zoomScale;
+    radius = Math.max(0, radius);
 
 });
 
@@ -835,8 +637,8 @@ canvas.addEventListener("mousemove", function(event) {
     if (mousePressed) {
         event.preventDefault();
 
-        translationX += (event.movementX / canvas.width / scaleX) * 2;
-        translationY -= (event.movementY / canvas.height / scaleY) * 2;
+        phi += 2 * (event.movementX / canvas.width);
+        theta += 2 * (event.movementY / canvas.height);
     }
 });
 

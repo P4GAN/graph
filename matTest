@@ -1,50 +1,44 @@
-function multiply1(m1, m2) {
-    let outputMatrix = []
-    for (let row = 0; row < 3; row++) {
-        for (let column = 0; column < 3; column ++) {
-            let value = 0
-            for (let j = 0; j < 3; j++) {
-                //for each value in matrix
-                //dot product of row and column
-                value += m1[column + 3 * j] * m2[3 * row + j]
+
+//returns 2x2 matrix representing cofactor of 3x3 matrix after row and column are removed
+function cofactor(m, row, column) {
+    let cofactor = []
+    for (let rowCheck = 0; rowCheck < 3; rowCheck++) {
+        for (let columnCheck = 0; columnCheck < 3; columnCheck++) {
+            if (rowCheck != row && columnCheck != column) {
+                cofactor.push(m[rowCheck * 3 + columnCheck]);
             }
-            outputMatrix.push(value);
         }
     }
-    return outputMatrix;
+    sign = (-1) ** (row * 3 + column)
+
+    return sign * (cofactor[0] * cofactor[3] - cofactor[1] * cofactor[2]);
 }
 
-function multiply2(a, b) {
-    var a00 = a[0 * 3 + 0];
-    var a01 = a[0 * 3 + 1];
-    var a02 = a[0 * 3 + 2];
-    var a10 = a[1 * 3 + 0];
-    var a11 = a[1 * 3 + 1];
-    var a12 = a[1 * 3 + 2];
-    var a20 = a[2 * 3 + 0];
-    var a21 = a[2 * 3 + 1];
-    var a22 = a[2 * 3 + 2];
-    var b00 = b[0 * 3 + 0];
-    var b01 = b[0 * 3 + 1];
-    var b02 = b[0 * 3 + 2];
-    var b10 = b[1 * 3 + 0];
-    var b11 = b[1 * 3 + 1];
-    var b12 = b[1 * 3 + 2];
-    var b20 = b[2 * 3 + 0];
-    var b21 = b[2 * 3 + 1];
-    var b22 = b[2 * 3 + 2];
+//finds inverse of 3x3 matrix using matrix of cofactors
+function inverse(m) {
+    let minorMatrix = []
+    let determinant = 0;
+    //loop through first row to determine determinant
+    //determinant = a * cofactorA + b * cofactorB + c * cofactorC
+    for (let i = 0; i < 3; i++) {
+        determinant += cofactor(m, 0, i) * m[i];
+    }
+    for (let row = 0; row < 3; row++) {
+        for (let column = 0; column < 3; column++) {
+            let cofactorValue = cofactor(m, row, column);
+            minorMatrix[row + column * 3] = cofactorValue / determinant //transposes matrix, swap columns with rows
+        }
+        
+    }
+    return minorMatrix;
+}
 
-    return [
-      b00 * a00 + b01 * a10 + b02 * a20,
-      b00 * a01 + b01 * a11 + b02 * a21,
-      b00 * a02 + b01 * a12 + b02 * a22,
-      b10 * a00 + b11 * a10 + b12 * a20,
-      b10 * a01 + b11 * a11 + b12 * a21,
-      b10 * a02 + b11 * a12 + b12 * a22,
-      b20 * a00 + b21 * a10 + b22 * a20,
-      b20 * a01 + b21 * a11 + b22 * a21,
-      b20 * a02 + b21 * a12 + b22 * a22,
-    ];
+function determinant(m) {
+    let determinant = 0;
+    for (let i = 0; i < 3; i++) {
+        determinant += cofactor(m, 0, i) * m[i];
+    }
+    return determinant;
 }
 
 console.time('test');

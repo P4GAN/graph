@@ -124,11 +124,10 @@ canvas.addEventListener("wheel", function(event) {
     let rect = canvas.getBoundingClientRect();
 
     let mouseX = event.offsetX
-    let mouseY = event.offsetY;
+    let mouseY = canvas.height - event.offsetY;
 
     let [clipX, clipY] = transformVector(projection(canvas.width, canvas.height), [mouseX, mouseY, 1]);
-    //console.log(clipX, clipY)
-    let [x, y] = transformVector(inverse(getCameraMatrix()), [clipX, clipY, 1])
+    let [x, y] = transformVector(inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
     let zoomScale = 1;
     if (event.deltaY < 0) {
@@ -142,14 +141,13 @@ canvas.addEventListener("wheel", function(event) {
     scaleY *= zoomScale;
     scaleY = Math.max(0, scaleY);
 
-    let [newX, newY] = transformVector(inverse(getCameraMatrix()), [clipX, clipY, 1])
+    let [newX, newY] = transformVector(inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
     translationX += newX - x;
     translationY += newY - y ;
 
-    console.log(scaleX);
-
 });
+
 
 canvas.addEventListener("mousedown", function(event) {
     mousePressed = true;
@@ -163,8 +161,8 @@ canvas.addEventListener("mousemove", function(event) {
     if (mousePressed) {
         event.preventDefault();
 
-        translationX += (event.movementX / canvas.width / scaleX) * 2;
-        translationY -= (event.movementY / canvas.height / scaleY) * 2;
+        translationX += (event.movementX / canvas.width / scaleX);
+        translationY -= (event.movementY / canvas.height / scaleY);
     }
 });
 

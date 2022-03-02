@@ -160,6 +160,7 @@ function perspective(fov, aspect, near, far) {
         0, 0, (2 * near * far) / (near - far), 0,
     ]
     //https://stackoverflow.com/questions/28286057/trying-to-understand-the-math-behind-the-perspective-matrix-in-webgl/28301213#28301213
+
 }
 
 //returns identity matrix
@@ -213,44 +214,93 @@ function transformVector(m, v) {
     return outputVector;
 }
 
-//returns 2x2 matrix representing cofactor of 3x3 matrix after row and column are removed
-function cofactor(m, row, column) {
-    let cofactor = []
-    for (let rowCheck = 0; rowCheck < 3; rowCheck++) {
-        for (let columnCheck = 0; columnCheck < 3; columnCheck++) {
+//returns cofactor matrix, i.e matrix with one row and column and removed
+function cofactor(matrix, row, column, size) {
+    let cofactorMatrix = []
+    for (let rowCheck = 0; rowCheck < size; rowCheck++) {
+        for (let columnCheck = 0; columnCheck < size; columnCheck++) {
             if (rowCheck != row && columnCheck != column) {
-                cofactor.push(m[rowCheck * 3 + columnCheck]);
+                cofactorMatrix.push(matrix[rowCheck * size + columnCheck]);
             }
         }
     }
-    sign = (-1) ** (row * 3 + column)
 
-    return sign * (cofactor[0] * cofactor[3] - cofactor[1] * cofactor[2]);
+    return cofactorMatrix
 }
 
-//finds inverse of 3x3 matrix using matrix of cofactors
-function inverse(m) {
-    let minorMatrix = []
-    let determinant = 0;
-    //loop through first row to determine determinant
-    //determinant = a * cofactorA + b * cofactorB + c * cofactorC
-    for (let i = 0; i < 3; i++) {
-        determinant += cofactor(m, 0, i) * m[i];
-    }
-    for (let row = 0; row < 3; row++) {
-        for (let column = 0; column < 3; column++) {
-            let cofactorValue = cofactor(m, row, column);
-            minorMatrix[row + column * 3] = cofactorValue / determinant //transposes matrix, swap columns with rows
+//finds inverse of using adjugate / determinant
+function inverse(matrix, size) {
+    let minorMatrix = [];
+    let matrixDeterminant = determinant(matrix, size);
+
+    for (let row = 0; row < size; row++) {
+        for (let column = 0; column < size; column++) {
+            let sign = (-1) ** (column + row);
+            let cofactorMatrix = cofactor(matrix, row, column, size);
+            minorMatrix[row + column * size] = sign * determinant(cofactorMatrix, size - 1) / matrixDeterminant //transposes matrix, swap columns with rows, sign * adjugate / determinant
         }
         
     }
     return minorMatrix;
 }
 
-function determinant(m) {
-    let determinant = 0;
-    for (let i = 0; i < 3; i++) {
-        determinant += cofactor(m, 0, i) * m[i];
+//return determinant of square matrix
+function determinant(matrix, size) {
+    if (size == 2) {
+        return (matrix[0] * matrix[3] - matrix[1] * matrix[2]);
     }
-    return determinant;
+    else {
+        let determinantValue = 0; 
+        for (let column = 0; column < size; column++) {
+            sign = (-1) ** column;
+            determinantValue += sign * matrix[column + size * 0] * determinant(cofactor(matrix, 0, column, size), size - 1);
+
+        }
+        return determinantValue;
+
+    }
+}
+
+//cross product of two 3d vectors
+function cross(a, b) {
+    return [a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]];
+    //(ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bz)
+}
+
+//returns 4D normal vector of v, unit vector in direction v
+function normalizeVector(v) {
+    let length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+
+    if (length > 0.001) {
+        return [v[0] / length, v[1] / length, v[2] / length];
+    }
+    else {
+        return [0, 0, 0];
+    }
+}
+
+//returns difference of 4D vectors b - a
+function subtract(a, b) {
+    return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+//returns matrix to point camera in direction of target
+function lookAt(cameraPosition, target) {
+    let difference = subtract(cameraPosition, target);
+    let up = [0, 1, 0];
+
+    let zAxis = normalizeVector(difference); //z axis is normal vector pointing from camera to target
+    let xAxis = normalizeVector(cross(up, zAxis)); //x axis perpendicular to z axis and up, normalised to length 1
+    let yAxis = cross(zAxis, xAxis); //y axis perpendicular to x axis and z axis, automatically has length 1
+
+    return [
+        xAxis[0], xAxis[1], xAxis[2], 0,
+        yAxis[0], yAxis[1], yAxis[2], 0,
+        zAxis[0], zAxis[1], zAxis[2], 0,
+        cameraPosition[0], cameraPosition[1], cameraPosition[2], 1,
+    ]
+
+    //transforms to new matrix with basis unit vectors xAxis, yAxis, zAxis and translates to place origin at cameraPosition
 }

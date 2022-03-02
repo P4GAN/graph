@@ -5,7 +5,7 @@
             Graphing Tool
         </title>
 
-        <link rel = "stylesheet" href = "style.css">
+        <link rel = "stylesheet" href = "style/style.css">
 
     
     </head>
@@ -15,57 +15,26 @@
     
     
         </canvas> 
-        <div style=" display: inline-block;">
-            <div class="slidecontainer">
-                <input type="range" min="-5" max="5" value="1" class="slider" id="scaleX">
-            </div>
-            <div class="slidecontainer">
-                <input type="range" min="-5" max="5" value="1" class="slider" id="scaleY">
-            </div>
-            <div class="slidecontainer">
-                <input type="range" min="-5" max="5" value="1" class="slider" id="scaleZ">
-            </div>
-
-            <div class="slidecontainer">
-                <input type="range" min="0" max="6.3" value="1" class="slider" id="angleX">
-            </div>
-            <div class="slidecontainer">
-                <input type="range" min="0" max="6.3" value="1" class="slider" id="angleY">
-            </div>
-            <div class="slidecontainer">
-                <input type="range" min="0" max="6.3" value="1" class="slider" id="angleZ">
-            </div>
-
-            <div class="slidecontainer">
-                <input type="range" min="0" max="400" value="50" class="slider" id="translationX">
-            </div>
-            <div class="slidecontainer">
-                <input type="range" min="0" max="400" value="50" class="slider" id="translationY">
-            </div>
-            <div class="slidecontainer">
-                <input type="range" min="-400" max="400" value="0" class="slider" id="translationZ">
-            </div>
+        
 
 
-        </div>
 
         
-          
-    
-
-
         <script id="vertex-shader-3d" type="x-shader/x-vertex">
             attribute vec4 a_position;
             attribute vec4 a_color;
+            attribute vec3 a_normal;
 
             uniform mat4 u_matrix;
 
             varying vec4 v_color;
+            varying vec3 v_normal;
              
             void main() {
-              // Multiply the position by the matrix.
-              gl_Position = u_matrix * a_position;
-              v_color = a_color;
+                // Multiply the position by the matrix.
+                gl_Position = u_matrix * a_position;
+                v_color = a_color;
+                v_normal = a_normal;
             }
         </script>
            
@@ -73,20 +42,28 @@
            
             // fragment shaders don't have a default precision so we need
             // to pick one. mediump is a good default
-            precision highp float;
+            precision mediump float;
 
             varying vec4 v_color;
+            varying vec3 v_normal;
+
+            uniform vec3 u_reverseLightDirection;
             
             void main() {
                 // gl_FragColor is a special variable a fragment shader
                 // is responsible for setting
 
+                vec3 normal = normalize(v_normal);
+                float direction = float(gl_FrontFacing) * 2.0 - 1.0;
+                float light = dot(vec3(normal.x * direction, normal.y * direction, normal.z * direction), u_reverseLightDirection);
+
                 gl_FragColor = v_color;
+                gl_FragColor.rgb *= light;
 
             }
            
         </script>
-        <script src = "matrix4.js"></script>
+        <script src = "matrix/matrix4.js"></script>
 
         <script src = "3D_Graphing.js"></script>
 

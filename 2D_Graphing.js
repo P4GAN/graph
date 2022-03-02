@@ -13,7 +13,7 @@ let angle = 0;
 let translationX = 0;
 let translationY = 0;
 
-let isovalue = 0;
+let isovalue = Math.PI / 4;
 
 
 let vertexShaderSource = document.getElementById("vertex-shader-2d").text;
@@ -31,6 +31,10 @@ let positionBuffer = gl.createBuffer();
 
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
+positions = marchingSquares2D(-10, 10, -10, 10, 0.05)
+
+positions.push(-10, 0, 10, 0);
+positions.push(0, -10, 0, 10);
 
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
@@ -81,30 +85,15 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 
 function fieldValue(x, y) {
-    return y - Math.abs(x);
+    return Math.atan2(y, x-1) - Math.atan2(y, x + 1)
 }
 //y1 and y2 are low and high values of output
 //x1 and x2 are low and high values of input
 //takes input x and interpolates output
 function interpolate(y1, y2, x1, x2, x) {
-    //error checks to prevent division by 0
-    //if input is close to x1, output y1
-    if (Math.abs(x - x1) <= 0.00001) {
-        console.log(x, x1);
-
-        return (y1);
-        
-    }
-    //if input is close to x2 ouput y2
-    if (Math.abs(x - x2) <= 0.00001) {
-        console.log(2);
-
-        return (y2);
-    }
+    //error check to prevent division by 0
     //if x1 is close to x2, input range is small so output y1
     if (Math.abs(x1 - x2) <= 0.00001) {
-        console.log(3);
-
         return (y1);
     }
     return (y1 + (y2 - y1) * ((x - x1)/(x2 - x1)));
@@ -241,8 +230,7 @@ canvas.addEventListener("wheel", function(event) {
     let mouseY = canvas.height - event.offsetY;
 
     let [clipX, clipY] = transformVector(projection(canvas.width, canvas.height), [mouseX, mouseY, 1]);
-    //console.log(clipX, clipY)
-    let [x, y] = transformVector(inverse(getCameraMatrix()), [clipX, clipY, 1])
+    let [x, y] = transformVector(inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
     let zoomScale = 1;
     if (event.deltaY < 0) {
@@ -256,7 +244,7 @@ canvas.addEventListener("wheel", function(event) {
     scaleY *= zoomScale;
     scaleY = Math.max(0, scaleY);
 
-    let [newX, newY] = transformVector(inverse(getCameraMatrix()), [clipX, clipY, 1])
+    let [newX, newY] = transformVector(inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
     translationX += newX - x;
     translationY += newY - y ;
@@ -275,8 +263,8 @@ canvas.addEventListener("mousemove", function(event) {
     if (mousePressed) {
         event.preventDefault();
 
-        translationX += (event.movementX / canvas.width / scaleX) * 2;
-        translationY -= (event.movementY / canvas.height / scaleY) * 2;
+        translationX += (event.movementX / canvas.width / scaleX);
+        translationY -= (event.movementY / canvas.height / scaleY);
     }
 });
 

@@ -128,44 +128,49 @@ function transformVector(m, v) {
     return outputVector;
 }
 
-//returns 2x2 matrix representing cofactor of 3x3 matrix after row and column are removed
-function cofactor(m, row, column) {
-    let cofactor = []
-    for (let rowCheck = 0; rowCheck < 3; rowCheck++) {
-        for (let columnCheck = 0; columnCheck < 3; columnCheck++) {
+//returns cofactor matrix, i.e matrix with one row and column and removed
+function cofactor(matrix, row, column, size) {
+    let cofactorMatrix = []
+    for (let rowCheck = 0; rowCheck < size; rowCheck++) {
+        for (let columnCheck = 0; columnCheck < size; columnCheck++) {
             if (rowCheck != row && columnCheck != column) {
-                cofactor.push(m[rowCheck * 3 + columnCheck]);
+                cofactorMatrix.push(matrix[rowCheck * size + columnCheck]);
             }
         }
     }
-    sign = (-1) ** (row * 3 + column)
 
-    return sign * (cofactor[0] * cofactor[3] - cofactor[1] * cofactor[2]);
+    return cofactorMatrix
 }
 
-//finds inverse of 3x3 matrix using matrix of cofactors
-function inverse(m) {
-    let minorMatrix = []
-    let determinant = 0;
-    //loop through first row to determine determinant
-    //determinant = a * cofactorA + b * cofactorB + c * cofactorC
-    for (let i = 0; i < 3; i++) {
-        determinant += cofactor(m, 0, i) * m[i];
-    }
-    for (let row = 0; row < 3; row++) {
-        for (let column = 0; column < 3; column++) {
-            let cofactorValue = cofactor(m, row, column);
-            minorMatrix[row + column * 3] = cofactorValue / determinant //transposes matrix, swap columns with rows
+//finds inverse of using adjugate / determinant
+function inverse(matrix, size) {
+    let minorMatrix = [];
+    let matrixDeterminant = determinant(matrix, size);
+
+    for (let row = 0; row < size; row++) {
+        for (let column = 0; column < size; column++) {
+            let sign = (-1) ** (column + size * row);
+            let cofactorMatrix = cofactor(matrix, row, column, size);
+            minorMatrix[row + column * size] = sign * determinant(cofactorMatrix, size - 1) / matrixDeterminant //transposes matrix, swap columns with rows, sign * adjugate / determinant
         }
         
     }
     return minorMatrix;
 }
 
-function determinant(m) {
-    let determinant = 0;
-    for (let i = 0; i < 3; i++) {
-        determinant += cofactor(m, 0, i) * m[i];
+//return determinant of square matrix
+function determinant(matrix, size) {
+    if (size == 2) {
+        return (matrix[0] * matrix[3] - matrix[1] * matrix[2]);
     }
-    return determinant;
+    else {
+        let determinantValue = 0;
+        for (let column = 0; column < size; column++) {
+            sign = (-1) ** column;
+            determinantValue += sign * matrix[column + size * 0] * determinant(cofactor(matrix, 0, column, size), size - 1);
+
+        }
+        return determinantValue;
+
+    }
 }
