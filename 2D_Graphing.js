@@ -13,7 +13,7 @@ let angle = 0;
 let translationX = 0;
 let translationY = 0;
 
-let isovalue = Math.PI / 4;
+let isovalue = 0;
 
 
 let vertexShaderSource = document.getElementById("vertex-shader-2d").text;
@@ -85,7 +85,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 
 function fieldValue(x, y) {
-    return Math.atan2(y, x-1) - Math.atan2(y, x + 1)
+    return y - 3 * x * x * x - x * x + 2 * x + 1;
 }
 //y1 and y2 are low and high values of output
 //x1 and x2 are low and high values of input
