@@ -7,19 +7,6 @@ let aspect = canvas.width / canvas.height;
 
 let mousePressed = false;
 
-let scaleX = 1;
-let scaleY = 1;
-let scaleZ = 1;
-
-//angle around x, y, z axis
-let angleX = degreesToRadians(0);
-let angleY = degreesToRadians(0);
-let angleZ = degreesToRadians(0);
-
-let translationX = 0;
-let translationY = 0;
-let translationZ = 0;
-
 //spherical coordinates of camera
 let radius = 100;
 let theta = 0;
