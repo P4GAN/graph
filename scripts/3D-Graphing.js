@@ -14,7 +14,7 @@ let phi = 0;
 
 let cameraPosition = [0, 0, 100];
 
-let isovalue = 25;
+let isovalue = 0;
 
 let vertexPositions = [
     [0, 0, 0],
@@ -301,6 +301,9 @@ let triangulationTable = [
     []
 ];
 
+let equationString = "x * y * z - 10"
+let code = math.compile(equationString);
+
 /*
 document.getElementById("angleTheta").oninput = function() { theta = this.value; }
 document.getElementById("anglePhi").oninput = function() { phi = this.value; }
@@ -333,7 +336,11 @@ let matrixLocation = gl.getUniformLocation(program, "u_matrix");
 
 let reverseLightDirectionLocation = gl.getUniformLocation(program, "u_reverseLightDirection")
 
+let start = performance.now();
+
 let marchingCubes = marchingCubes3D(-20, 20, -20, 20, -20, 20, 1);
+
+console.log(performance.now() - start);
 
 //positions
 let positionBuffer = gl.createBuffer();
@@ -356,6 +363,34 @@ gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
 
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
 
+function setEquation() {
+    equationString = document.getElementById("equation").value;
+    code = math.compile(equationString);
+
+    console.log(equationString);
+    let start = performance.now();
+    marchingCubes = marchingCubes3D(-20, 20, -20, 20, -20, 20, 1);
+    console.log(performance.now() - start);
+
+    //positions
+    positionBuffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.trianglePositions), gl.STATIC_DRAW);
+
+    //colors
+    colorBuffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(marchingCubes.colors), gl.STATIC_DRAW);
+
+    //normals
+    normalBuffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
+}
+
 //returns normal vector to triangle given 3 vector corners
 function triangleNormal(a, b, c) {
     edgeAB = subtract(b, a);
@@ -373,8 +408,22 @@ function degreesToRadians(d) {
 }
 
 function fieldValue(x, y, z) {
-    //return z * z + (10 - Math.sqrt(x * x + y * y)) * (10 - Math.sqrt(x * x + y * y));
-    return z * z - x * x - y * y;
+    //return z * z + (10 - Math.sqrt(x * x + y * y)) * (10 - Math.sqrt(x * x + y * y)) - 25; //torus
+    //return z * z - x * x - y * y; //hyperboloid
+    //return z - Math.sin(x) - Math.cos(y);
+    //return z - Math.sin(0.05 * (x * x + y * y)) //sin ripple
+    //return z - 1/(0.1 * (x * x + y * y));
+    //return x * y * z - 10;
+
+    //return Math.sin(z) + Math.sin(y) + Math.sin(x);
+    //return z - Math.pow(x, y);
+    //return Math.pow(x, 100) + Math.pow(y, 100) + Math.pow(z, 100) - 10;
+    let scope = {
+        x: x,
+        y: y,
+        z: z
+    }
+    return code.evaluate(scope)
 }
 
 /*function getWorldMatrix() {
@@ -518,6 +567,8 @@ function marchingCubes3D(startX, endX, startY, endY, startZ, endZ, cubeSize) {
             }
         }
     }
+
+    console.log("finished");
 
     let marchingCubesResult = { "trianglePositions": trianglePositions, "colors": colors, "normals": normals }
     return marchingCubesResult;

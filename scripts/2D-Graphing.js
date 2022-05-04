@@ -15,6 +15,8 @@ let translationY = 0;
 
 let isovalue = 0;
 
+let equationString = "x * y - 10"
+let code = math.compile(equationString);
 
 let vertexShaderSource = document.getElementById("vertex-shader-2d").text;
 let fragmentShaderSource = document.getElementById("fragment-shader-2d").text;
@@ -37,6 +39,24 @@ positions.push(-10, 0, 10, 0);
 positions.push(0, -10, 0, 10);
 
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+function setEquation() {
+    equationString = document.getElementById("equation").value;
+    code = math.compile(equationString);
+
+    console.log(equationString);
+    let start = performance.now();
+    positions = marchingSquares2D(-10, 10, -10, 10, 0.05)
+    console.log(performance.now() - start);
+
+    positions.push(-10, 0, 10, 0);
+    positions.push(0, -10, 0, 10);
+
+    positionBuffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+}
 
 function getCameraMatrix() {
     /*transformation should be
@@ -85,8 +105,17 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 
 function fieldValue(x, y) {
-    return y - 3 * x * x * x - x * x + 2 * x + 1;
+    //return Math.cos(x * y) 
+    //return y - Math.sin(x)
+    //return y - 3 * x * x * x - x * x + 2 * x + 1;
+    let scope = {
+        x: x,
+        y: y
+    }
+    return code.evaluate(scope)
 }
+
+
 //y1 and y2 are low and high values of output
 //x1 and x2 are low and high values of input
 //takes input x and interpolates output
@@ -109,24 +138,30 @@ function marchingSquares2D(startX, endX, startY, endY, squareSize) {
             //each 2x2 grid of values corresponds to cell
             //cell type is marked by 4 digit binary number corresponding to each of the 4 corners being > or < than isovalue i.e 0000 to 1111 or 0 to 15
             let squareType = 0;
-            if (fieldValue(x, y) >= isovalue) {
+
+            let bottomLeft = fieldValue(x, y);
+            let bottomRight = fieldValue(x + squareSize, y);
+            let topLeft = fieldValue(x, y + squareSize);
+            let topRight = fieldValue(x + squareSize, y + squareSize);
+
+            if (bottomLeft >= isovalue) {
                 squareType += 1;
             }
-            if (fieldValue(x + squareSize, y) >= isovalue) {
+            if (bottomRight >= isovalue) {
                 squareType += 2;
             }
-            if (fieldValue(x + squareSize, y + squareSize) >= isovalue) {
+            if (topRight >= isovalue) {
                 squareType += 4;
             }
-            if (fieldValue(x, y + squareSize) >= isovalue) {
+            if (topLeft >= isovalue) {
                 squareType += 8;
             }
 
 
-            let bottomMiddle = [interpolate(x, x + squareSize, fieldValue(x, y), fieldValue(x + squareSize, y), isovalue), y]
-            let rightMiddle = [x + squareSize, interpolate(y, y + squareSize, fieldValue(x + squareSize, y), fieldValue(x + squareSize, y + squareSize), isovalue)]
-            let topMiddle = [interpolate(x, x + squareSize, fieldValue(x, y + squareSize), fieldValue(x + squareSize, y + squareSize), isovalue), y + squareSize]
-            let leftMiddle = [x, interpolate(y, y + squareSize, fieldValue(x, y), fieldValue(x, y + squareSize), isovalue)]
+            let bottomMiddle = [interpolate(x, x + squareSize, bottomLeft, bottomRight, isovalue), y]
+            let rightMiddle = [x + squareSize, interpolate(y, y + squareSize, bottomRight, topRight, isovalue)]
+            let topMiddle = [interpolate(x, x + squareSize, topLeft, topRight, isovalue), y + squareSize]
+            let leftMiddle = [x, interpolate(y, y + squareSize, bottomLeft, topLeft, isovalue)]
 
             //add line based on which configuration of points
             switch (squareType) {
@@ -203,6 +238,8 @@ function draw() {
 
     gl.enableVertexAttribArray(positionAttributeLocation);
     
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
     // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
     let size = 2;          // 2 components per iteration
     let type = gl.FLOAT;   // the data is 32bit floats
@@ -220,7 +257,7 @@ function draw() {
 
     requestAnimationFrame(draw);
 }
-
+  
 canvas.addEventListener("wheel", function(event) {
     event.preventDefault();
 

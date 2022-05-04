@@ -16,9 +16,16 @@
     
         </canvas> 
         
+        
 
+        <form>
+            <input type="text" id="equation" placeholder="Enter Equation:">
+            <div onclick="setEquation()" id="setEquation" class="button">
+                Confirm
+            </div> 
+        </form>
 
-
+        <a href="mantine.dev">mantine.dev</a>
         
         <script id="vertex-shader-3d" type="x-shader/x-vertex">
             attribute vec4 a_position;
@@ -63,9 +70,9 @@
             }
            
         </script>
-        <script src = "matrix/matrix4.js"></script>
-
-        <script src = "3D_Graphing.js"></script>
+        <script src="modules/math.js"></script>
+        <script src = "modules/matrix/matrix4.js"></script>
+        <script src = "scripts/3D-Graphing.js"></script>
 
     </body>
 

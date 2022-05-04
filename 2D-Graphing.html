@@ -11,11 +11,17 @@
     </head>
     
     <body>
-        <canvas id = "canvas" height = 600 width = 600>
-    
-    
-        </canvas> 
-        <div>lol</div>
+        <canvas id = "canvas" height = 600 width = 600></canvas> 
+
+
+        <form>
+            <input type="text" id="equation" placeholder="Enter Equation:">
+            <div onclick="setEquation()" id="setEquation" class="button">
+                Confirm
+            </div> 
+        </form>
+
+
     
 
 
@@ -49,9 +55,11 @@
             }
            
         </script>
-        <script src = "matrix/matrix3.js"></script>
+        <script src="modules/math.js"></script>
 
-        <script src = "2D_Graphing.js"></script>
+        <script src = "modules/matrix/matrix3.js"></script>
+
+        <script src = "scripts/2D-Graphing.js"></script>
 
     </body>
 

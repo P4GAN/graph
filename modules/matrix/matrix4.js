@@ -287,12 +287,16 @@ function subtract(a, b) {
 }
 
 //returns matrix to point camera in direction of target
+
+//TODO FIX CAMERA BREAKING WHEN POINTING UP
 function lookAt(cameraPosition, target) {
     let difference = subtract(cameraPosition, target);
     let up = [0, 1, 0];
 
     let zAxis = normalizeVector(difference); //z axis is normal vector pointing from camera to target
     let xAxis = normalizeVector(cross(up, zAxis)); //x axis perpendicular to z axis and up, normalised to length 1
+
+
     let yAxis = cross(zAxis, xAxis); //y axis perpendicular to x axis and z axis, automatically has length 1
 
     return [
