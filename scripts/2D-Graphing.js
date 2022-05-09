@@ -5,8 +5,8 @@ const gl = canvas.getContext("webgl");
 
 let mousePressed = false;
 
-let scaleX = 0.5;
-let scaleY = 0.5;
+let scaleX = 0.1;
+let scaleY = 0.1;
 
 let angle = 0;
 
@@ -15,8 +15,8 @@ let translationY = 0;
 
 let isovalue = 0;
 
-let equationString = "x * y - 10"
-let code = math.compile(equationString);
+let equationString = "f(x, y) = x * y - 10"
+let fieldValue = math.evaluate(equationString);
 
 let vertexShaderSource = document.getElementById("vertex-shader-2d").text;
 let fragmentShaderSource = document.getElementById("fragment-shader-2d").text;
@@ -33,28 +33,25 @@ let positionBuffer = gl.createBuffer();
 
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-positions = marchingSquares2D(-10, 10, -10, 10, 0.05)
-
-positions.push(-10, 0, 10, 0);
-positions.push(0, -10, 0, 10);
+let positions = setChunks();
 
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
 function setEquation() {
     equationString = document.getElementById("equation").value;
-    code = math.compile(equationString);
+    fieldValue = math.evaluate("f(x, y) =" + equationString);
 
     console.log(equationString);
     let start = performance.now();
-    positions = marchingSquares2D(-10, 10, -10, 10, 0.05)
+    positions = setChunks();
     console.log(performance.now() - start);
 
-    positions.push(-10, 0, 10, 0);
-    positions.push(0, -10, 0, 10);
 
-    positionBuffer = gl.createBuffer();
+    // positionBuffer = gl.createBuffer();
 
+    //gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 }
 
@@ -104,16 +101,16 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 
 
-function fieldValue(x, y) {
+/*function fieldValue(x, y) {
     //return Math.cos(x * y) 
-    //return y - Math.sin(x)
+    return y - Math.sin(x)
     //return y - 3 * x * x * x - x * x + 2 * x + 1;
     let scope = {
         x: x,
         y: y
     }
     return code.evaluate(scope)
-}
+}*/
 
 
 //y1 and y2 are low and high values of output
@@ -133,8 +130,8 @@ function interpolate(y1, y2, x1, x2, x) {
 function marchingSquares2D(startX, endX, startY, endY, squareSize) {
     let linePositions = [];
 
-    for (let x = startX; x < endX - squareSize; x += squareSize) {
-        for (let y = startY; y < endY - squareSize; y += squareSize) {
+    for (let x = startX; x <= endX; x += squareSize) {
+        for (let y = startY; y <= endY; y += squareSize) {
             //each 2x2 grid of values corresponds to cell
             //cell type is marked by 4 digit binary number corresponding to each of the 4 corners being > or < than isovalue i.e 0000 to 1111 or 0 to 15
             let squareType = 0;
@@ -225,6 +222,20 @@ function marchingSquares2D(startX, endX, startY, endY, squareSize) {
     return linePositions;
 }
 
+function setChunks() {
+    let start = performance.now()
+    let max = 1/scaleX
+    let meshPositions = marchingSquares2D(-max, max, -max, max, max/50)
+
+    //meshPositions.push(...marchingSquares2D(10, 30, -10, 10, 0.05))
+
+    meshPositions.push(-max, 0, max, 0);
+    meshPositions.push(0, -max, 0, max);
+    console.log(performance.now() - start);
+
+    return meshPositions;
+}
+
 function draw() {
 
 
@@ -283,8 +294,14 @@ canvas.addEventListener("wheel", function(event) {
 
     let [newX, newY] = transformVector(inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
-    translationX += newX - x;
-    translationY += newY - y ;
+    translationX += 0//newX - x;
+    translationY += 0//newY - y ;
+
+    positions = setChunks();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
 
 });
 

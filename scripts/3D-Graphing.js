@@ -301,8 +301,8 @@ let triangulationTable = [
     []
 ];
 
-let equationString = "x * y * z - 10"
-let code = math.compile(equationString);
+let equationString = "f(x, y, z) = x * y * z - 10"
+let fieldValue = math.evaluate(equationString);
 
 /*
 document.getElementById("angleTheta").oninput = function() { theta = this.value; }
@@ -365,7 +365,7 @@ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATI
 
 function setEquation() {
     equationString = document.getElementById("equation").value;
-    code = math.compile(equationString);
+    fieldValue = math.evaluate("f(x, y, z) = " + equationString);
 
     console.log(equationString);
     let start = performance.now();
@@ -373,20 +373,14 @@ function setEquation() {
     console.log(performance.now() - start);
 
     //positions
-    positionBuffer = gl.createBuffer();
-
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.trianglePositions), gl.STATIC_DRAW);
 
     //colors
-    colorBuffer = gl.createBuffer();
-
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(marchingCubes.colors), gl.STATIC_DRAW);
 
     //normals
-    normalBuffer = gl.createBuffer();
-
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
 }
@@ -407,7 +401,7 @@ function degreesToRadians(d) {
     return d * Math.PI / 180;
 }
 
-function fieldValue(x, y, z) {
+/*function fieldValue(x, y, z) {
     //return z * z + (10 - Math.sqrt(x * x + y * y)) * (10 - Math.sqrt(x * x + y * y)) - 25; //torus
     //return z * z - x * x - y * y; //hyperboloid
     //return z - Math.sin(x) - Math.cos(y);
@@ -424,7 +418,7 @@ function fieldValue(x, y, z) {
         z: z
     }
     return code.evaluate(scope)
-}
+}*/
 
 /*function getWorldMatrix() {
     /*transformation should be
@@ -660,6 +654,22 @@ canvas.addEventListener("wheel", function(event) {
     }
     radius *= zoomScale;
     radius = Math.max(0, radius);
+
+    let start = performance.now();
+    marchingCubes = marchingCubes3D(-radius, radius, -radius, radius, -radius, radius, radius/10);
+    console.log(performance.now() - start);
+
+    //positions
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.trianglePositions), gl.STATIC_DRAW);
+
+    //colors
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(marchingCubes.colors), gl.STATIC_DRAW);
+
+    //normals
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
 
 });
 
