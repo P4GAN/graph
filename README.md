@@ -1,7 +1,24 @@
-# WebGL Graphing Calculator
- 
-Year 12 Software Design and Development Major Work Project
+# graph
 
-2D and 3D WebGL Graphing Calculator
+## Project setup
+```
+npm install
+```
 
-right now it does the mandelbrot set
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).

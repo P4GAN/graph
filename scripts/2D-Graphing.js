@@ -3,11 +3,6 @@ const canvas = document.getElementById("canvas");
 
 const gl = canvas.getContext("webgl");
 
-function pog(x) {
-    x.style.color = 'green';
-}
-
-
 let mousePressed = false;
 
 let scaleX = 0.1;
