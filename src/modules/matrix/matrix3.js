@@ -1,5 +1,5 @@
 //translation matrix translates vector tx units in x direction and ty units in y direction
-function translation(tx, ty) {
+export function translation(tx, ty) {
     return [
         1, 0, 0,
         0, 1, 0,
@@ -18,7 +18,7 @@ function translation(tx, ty) {
 }
 
 //rotation matrix rotates vector angle radians
-function rotation(angle) {
+export function rotation(angle) {
     return [
         Math.cos(angle), -Math.sin(angle), 0,
         Math.sin(angle), Math.cos(angle), 0,
@@ -43,7 +43,7 @@ function rotation(angle) {
 }
 
 //scaling matrix scales vector sx units in x direction, sy units in y direction
-function scaling(sx, sy) {
+export function scaling(sx, sy) {
     return [
         sx, 0, 0,
         0, sy, 0,
@@ -61,7 +61,7 @@ function scaling(sx, sy) {
     */
 }
 
-function projection(width, height) {
+export function projection(width, height) {
     return [
         2 / width, 0, 0,
         0, 2 / height, 0,
@@ -80,7 +80,7 @@ function projection(width, height) {
 }
 
 //returns identity matrix
-function identity() {
+export function identity() {
     return [
         1, 0, 0,
         0, 1, 0,
@@ -99,7 +99,7 @@ function identity() {
 }
 
 //multiplies two 3x3 matrices
-function multiply(m1, m2) {
+export function multiply(m1, m2) {
     let outputMatrix = []
     for (let row = 0; row < 3; row++) {
         for (let column = 0; column < 3; column ++) {
@@ -116,7 +116,7 @@ function multiply(m1, m2) {
 }
 
 //multiplies matrix and vector and returns vector
-function transformVector(m, v) {
+export function transformVector(m, v) {
     let outputVector = []
     for (let i = 0; i < v.length; i++) {
         let value = 0;
@@ -129,7 +129,7 @@ function transformVector(m, v) {
 }
 
 //returns cofactor matrix, i.e matrix with one row and column and removed
-function cofactor(matrix, row, column, size) {
+export function cofactor(matrix, row, column, size) {
     let cofactorMatrix = []
     for (let rowCheck = 0; rowCheck < size; rowCheck++) {
         for (let columnCheck = 0; columnCheck < size; columnCheck++) {
@@ -143,7 +143,7 @@ function cofactor(matrix, row, column, size) {
 }
 
 //finds inverse of using adjugate / determinant
-function inverse(matrix, size) {
+export function inverse(matrix, size) {
     let minorMatrix = [];
     let matrixDeterminant = determinant(matrix, size);
 
@@ -159,14 +159,14 @@ function inverse(matrix, size) {
 }
 
 //return determinant of square matrix
-function determinant(matrix, size) {
+export function determinant(matrix, size) {
     if (size == 2) {
         return (matrix[0] * matrix[3] - matrix[1] * matrix[2]);
     }
     else {
         let determinantValue = 0;
         for (let column = 0; column < size; column++) {
-            sign = (-1) ** column;
+            let sign = (-1) ** column;
             determinantValue += sign * matrix[column + size * 0] * determinant(cofactor(matrix, 0, column, size), size - 1);
 
         }

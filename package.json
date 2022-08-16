@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "core-js": "^3.8.3",
+        "mathlive": "^0.76.1",
         "vue": "^3.2.13"
     },
     "devDependencies": {
@@ -23,16 +24,18 @@
     "eslintConfig": {
         "root": true,
         "env": {
-        "node": true
+            "node": true
         },
         "extends": [
-        "plugin:vue/vue3-essential",
-        "eslint:recommended"
+            "plugin:vue/vue3-essential",
+            "eslint:recommended"
         ],
         "parserOptions": {
-        "parser": "@babel/eslint-parser"
+            "parser": "@babel/eslint-parser"
         },
-        "rules": {}
+        "rules": {
+            "no-unused-vars": "off"
+        }
     },
     "browserslist": [
         "> 1%",

@@ -1,17 +1,45 @@
 <template>
     <div class = "sidebar">
-        pog
+        <math-field
+            class = "equation"
+            v-for = "(item, index) in equationList"
+            v-bind:key = "index"
+            @input = "(event) => { mathInput(event, index) }" > 
+        </math-field>
+
     </div>
+
 </template>
 
 
-<script>
-export default {
-    name: 'EquationEditorSidebar',
-    props: {
+<script setup>
+import { ref, reactive, onMounted } from "vue"
+import { equationList } from "@/stores/equations.js"
+import "mathlive"
+import math from "@/modules/math.js";
+
+function mathInput(event, index) {
+
+    try {
+        let equationString = event.target.getValue("ascii-math");
+        equationString = equationString.replaceAll("⋅", "*");
+        equationList.value[index] = {
+            equationString: equationString,
+            fieldValue: math.evaluate("f(x, y) =" + equationString),
+            color: [255, 0, 0],
+        }
+
     }
+    catch(err) {
+        console.error("invalid equation")
+    }
+    
+    
+
 }
+
 </script>
+
 
 <style>
     :root {
@@ -44,21 +72,11 @@ export default {
 
 }
 
-.graphTypes {
-    display: flex;
-    flex-direction: row;
-    list-style: none;
-    align-items: center;
-    justify-content: space-around;
+.equation {
+    border: 1px solid rgba(0, 0, 0, 0.2);
 
-    margin: 0;
-    padding: 0;
-}
-
-.graphTypes li {
-    margin: auto;
-    text-align: center;
-    margin: 10px;
+    padding: 10px 5% 10px 5%;
+    width: 90%;
 }
 
 </style>

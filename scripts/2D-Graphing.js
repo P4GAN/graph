@@ -1,6 +1,6 @@
 
 const canvas = document.getElementById("canvas");
-
+console.log(canvas)
 const gl = canvas.getContext("webgl");
 
 let mousePressed = false;
@@ -294,8 +294,8 @@ canvas.addEventListener("wheel", function(event) {
 
     let [newX, newY] = transformVector(inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
-    translationX += 0//newX - x;
-    translationY += 0//newY - y ;
+    translationX += newX - x;
+    translationY += newY - y ;
 
     positions = setChunks();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);

@@ -2,20 +2,15 @@
     <div class = "pageWrapper">
         <NavbarTop/>
         <EquationEditorSidebar/>
+        <GraphCanvas3d/>
     </div>
 </template>
 
-<script>
+<script setup>
 import NavbarTop from './components/NavbarTop.vue'
 import EquationEditorSidebar from './components/EquationEditorSidebar.vue'
-
-export default {
-    name: 'App',
-    components: {
-        NavbarTop,
-        EquationEditorSidebar
-    }
-}
+import GraphCanvas2d from './components/GraphCanvas2d.vue'
+import GraphCanvas3d from './components/GraphCanvas3d.vue'
 </script>
 
 <style>

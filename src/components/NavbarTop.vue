@@ -14,18 +14,16 @@
     </nav>
 </template>
 
-<script>
-export default {
-    name: 'NavbarTop',
-    props: {
-    }
-}
+<script setup>
+
 </script>
 
 <style>
     :root {
         font-size: 20px;
         --navbar-bg: #5fc5e7;
+        --navbar-button-hover: #31b8e6;
+        --navbar-button-active: #5385e9;
     }
 </style>
 
@@ -60,14 +58,22 @@ export default {
     align-items: center;
     justify-content: space-around;
 
-    margin: 0;
+    margin-inline: 0px;
     padding: 0;
+    
+    height: 100%;
 }
 
 .graphTypes li {
-    margin: auto;
+    display: flex;
+    align-items: center;
+    height: 100%;
     text-align: center;
-    margin: 10px;
+    margin-left: 10px;
+}
+
+.graphTypes li:hover {
+    background-color: var(--navbar-button-hover);
 }
 
 </style>

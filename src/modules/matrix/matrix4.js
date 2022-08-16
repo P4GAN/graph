@@ -1,5 +1,5 @@
 //translation matrix translates vector tx units in x direction, ty units in y direction, tz units in z direction
-function translation(tx, ty, tz) {
+export function translation(tx, ty, tz) {
     return [
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -21,7 +21,7 @@ function translation(tx, ty, tz) {
 }
 
 //rotation matrix rotates vector angle radians around x axis
-function rotationX(angle) {
+export function rotationX(angle) {
     return [
         1, 0, 0, 0,
         0, Math.cos(angle), Math.sin(angle), 0,
@@ -49,7 +49,7 @@ function rotationX(angle) {
 }
 
 //rotation matrix rotates vector angle radians around y axis
-function rotationY(angle) {
+export function rotationY(angle) {
     return [
         Math.cos(angle), 0, -Math.sin(angle), 0,
         0, 1, 0, 0,
@@ -78,7 +78,7 @@ function rotationY(angle) {
 }
 
 //rotation matrix rotates vector angle radians around z axis
-function rotationZ(angle) {
+export function rotationZ(angle) {
     return [
         Math.cos(angle), Math.sin(angle), 0, 0,
         -Math.sin(angle), Math.cos(angle), 0, 0,
@@ -106,7 +106,7 @@ function rotationZ(angle) {
 }
 
 //scaling matrix scales vector sx units in x direction, sy units in y direction, sz units in z direction
-function scaling(sx, sy, sz) {
+export function scaling(sx, sy, sz) {
     return [
         sx, 0, 0, 0,
         0, sy, 0, 0,
@@ -127,7 +127,7 @@ function scaling(sx, sy, sz) {
 }
 
 //orthographic projection matrix projects 3d vectors in box to 2d
-function orthographic(left, right, bottom, top, near, far) {
+export function orthographic(left, right, bottom, top, near, far) {
     return [
         2 / (right - left), 0, 0, 0,
         0, 2 / (top - bottom), 0, 0,
@@ -150,12 +150,13 @@ function orthographic(left, right, bottom, top, near, far) {
     */
 }
 
-function perspective(fov, aspect, near, far) {
+//aspect = width / height
+export function perspective(fov, aspect, near, far) {
     let f = Math.tan(Math.PI * 0.5 - fov * 0.5);
     //f = 1/tan(fov)
     return [
-        f, 0, 0, 0,
-        0, f / aspect, 0, 0,
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
         0, 0, (near + far) / (near - far), -1,
         0, 0, (2 * near * far) / (near - far), 0,
     ]
@@ -164,7 +165,7 @@ function perspective(fov, aspect, near, far) {
 }
 
 //returns identity matrix
-function identity() {
+export function identity() {
     return [
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -185,7 +186,7 @@ function identity() {
 }
 
 //multiplies two 4x4 matrices
-function multiply(m1, m2) {
+export function multiply(m1, m2) {
     let outputMatrix = []
     for (let row = 0; row < 4; row++) {
         for (let column = 0; column < 4; column ++) {
@@ -202,7 +203,7 @@ function multiply(m1, m2) {
 }
 
 //multiplies matrix and vector and returns vector
-function transformVector(m, v) {
+export function transformVector(m, v) {
     let outputVector = []
     for (let i = 0; i < v.length; i++) {
         let value = 0;
@@ -215,7 +216,7 @@ function transformVector(m, v) {
 }
 
 //returns cofactor matrix, i.e matrix with one row and column and removed
-function cofactor(matrix, row, column, size) {
+export function cofactor(matrix, row, column, size) {
     let cofactorMatrix = []
     for (let rowCheck = 0; rowCheck < size; rowCheck++) {
         for (let columnCheck = 0; columnCheck < size; columnCheck++) {
@@ -229,7 +230,7 @@ function cofactor(matrix, row, column, size) {
 }
 
 //finds inverse of using adjugate / determinant
-function inverse(matrix, size) {
+export function inverse(matrix, size) {
     let minorMatrix = [];
     let matrixDeterminant = determinant(matrix, size);
 
@@ -245,14 +246,14 @@ function inverse(matrix, size) {
 }
 
 //return determinant of square matrix
-function determinant(matrix, size) {
+export function determinant(matrix, size) {
     if (size == 2) {
         return (matrix[0] * matrix[3] - matrix[1] * matrix[2]);
     }
     else {
         let determinantValue = 0; 
         for (let column = 0; column < size; column++) {
-            sign = (-1) ** column;
+            let sign = (-1) ** column;
             determinantValue += sign * matrix[column + size * 0] * determinant(cofactor(matrix, 0, column, size), size - 1);
 
         }
@@ -262,7 +263,7 @@ function determinant(matrix, size) {
 }
 
 //cross product of two 3d vectors
-function cross(a, b) {
+export function cross(a, b) {
     return [a[1] * b[2] - a[2] * b[1],
             a[2] * b[0] - a[0] * b[2],
             a[0] * b[1] - a[1] * b[0]];
@@ -270,7 +271,7 @@ function cross(a, b) {
 }
 
 //returns 4D normal vector of v, unit vector in direction v
-function normalizeVector(v) {
+export function normalizeVector(v) {
     let length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 
     if (length > 0.001) {
@@ -282,14 +283,14 @@ function normalizeVector(v) {
 }
 
 //returns difference of 4D vectors b - a
-function subtract(a, b) {
+export function subtract(a, b) {
     return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
 
 //returns matrix to point camera in direction of target
 
 //TODO FIX CAMERA BREAKING WHEN POINTING UP
-function lookAt(cameraPosition, target) {
+export function lookAt(cameraPosition, target) {
     let difference = subtract(cameraPosition, target);
     let up = [0, 1, 0];
 
