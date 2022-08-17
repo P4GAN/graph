@@ -37,6 +37,9 @@ onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
 
+    scaleX = 0.1;
+    scaleY = 0.1 * canvas.value.width / canvas.value.height;
+
     canvas.value.addEventListener("mousedown", function(event) {
         mousePressed = true;
     });
@@ -110,16 +113,31 @@ function getCameraMatrix() {
 
 function setChunks() {
     let start = performance.now();
-    let max = 1/scaleX;
-    positions = [-translationX - max, 0, -translationX + max, 0, 0, -translationY - max, 0, -translationY + max];
-    colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    let maxX = 1/scaleX;
+    let maxY = 1/scaleY;
+    positions = [];
+    colors = [];
+    for (let x = Math.floor(-translationX - maxX); x < -translationX + maxX; x += 1) {
+        positions.push(x, -translationY - maxY, x, -translationY + maxY)
+        colors.push(0, 0, 0, 100, 0, 0, 0, 100)
+    }
+    for (let y = Math.floor(-translationY - maxY); y < -translationY + maxY; y += 1) {
+        positions.push(-translationX - maxX, y, -translationX + maxX, y)
+        colors.push(0, 0, 0, 100, 0, 0, 0, 100)
+    }
+    positions.push(-translationX - maxX, 0, -translationX + maxX, 0, 0, -translationY - maxY, 0, -translationY + maxY);
+    colors.push(0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255);
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
         let graphFunction = equationList.value[i].fieldValue;
-        let marchingSquaresResult = marchingSquares2d(-translationX - max, -translationX + max, -translationY - max, -translationY + max, max/20, graphColor, graphFunction);
+        let marchingSquaresResult = marchingSquares2d(-translationX - maxX, -translationX + maxX, -translationY - maxY, -translationY + maxY, maxX/50, graphColor, graphFunction);
         positions = positions.concat(marchingSquaresResult.linePositions)
         colors = colors.concat(marchingSquaresResult.colors)
     }
+
+    console.log(positions)
+
+    console.log(colors)
 
     console.log(performance.now() - start);
 
@@ -127,6 +145,9 @@ function setChunks() {
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW);
 }
 
 function draw() {
@@ -152,19 +173,15 @@ function draw() {
 
     gl.vertexAttribPointer(programInfo.attributes.positionAttribute, size, type, normalize, stride, offset)
 
-    gl.enableVertexAttribArray(programInfo.attributes.positionAttribute);
+    gl.enableVertexAttribArray(programInfo.attributes.colorAttribute);
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
 
-    size = 3;
+    size = 4;
     type = gl.UNSIGNED_BYTE;
     normalize = true;
 
     gl.vertexAttribPointer(programInfo.attributes.colorAttribute, size, type, normalize, stride, offset)
-
-    gl.enableVertexAttribArray(programInfo.attributes.colorAttribute);
-    
-    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
 
     gl.uniformMatrix3fv(programInfo.uniforms.matrix, false, getCameraMatrix())
 

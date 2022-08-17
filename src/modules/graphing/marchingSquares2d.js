@@ -91,14 +91,12 @@ export default function marchingSquares2d(startX, endX, startY, endY, squareSize
                 case 5:
                     linePositions.push(...leftMiddle, ...topMiddle);
                     linePositions.push(...rightMiddle, ...bottomMiddle);
-                    colors.push(...color, ...color);
-                    colors.push(...color, ...color);
+                    colors.push(...color, ...color, ...color, ...color);
                     break;
                 case 10:
                     linePositions.push(...topMiddle, ...rightMiddle);
                     linePositions.push(...bottomMiddle, ...leftMiddle);
-                    colors.push(...color, ...color);
-                    colors.push(...color, ...color);
+                    colors.push(...color, ...color, ...color, ...color);
                     break;
     
                 case 7:

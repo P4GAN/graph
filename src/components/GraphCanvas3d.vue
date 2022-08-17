@@ -112,6 +112,7 @@ function setChunks() {
     console.log(performance.now() - start);
 
     console.log(marchingCubes)
+    
 
     //positions
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);

@@ -2,7 +2,8 @@
     <div class = "pageWrapper">
         <NavbarTop/>
         <EquationEditorSidebar/>
-        <GraphCanvas3d/>
+        <GraphCanvas2d/>
+        <SettingsMenu v-if="settings.settingsMode"/>
     </div>
 </template>
 
@@ -11,6 +12,12 @@ import NavbarTop from './components/NavbarTop.vue'
 import EquationEditorSidebar from './components/EquationEditorSidebar.vue'
 import GraphCanvas2d from './components/GraphCanvas2d.vue'
 import GraphCanvas3d from './components/GraphCanvas3d.vue'
+import SettingsMenu from './components/SettingsMenu.vue'
+
+import { settings } from './stores/settings.js'
+
+
+console.log(settings.value.settingsMode)
 </script>
 
 <style>
