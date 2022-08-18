@@ -2,7 +2,7 @@
     <div class = "pageWrapper">
         <NavbarTop/>
         <EquationEditorSidebar/>
-        <GraphCanvas2d/>
+        <GraphCanvas3d/>
         <SettingsMenu v-if="settings.settingsMode"/>
     </div>
 </template>

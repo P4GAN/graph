@@ -385,9 +385,7 @@ export default function marchingCubes3d(startX, endX, startY, endY, startZ, endZ
                     let a = edgeMiddleVertex(edges[trianglePoints[triangleIndex]], x, y, z, cubeSize, fieldValue);
                     let b = edgeMiddleVertex(edges[trianglePoints[triangleIndex + 1]], x, y, z, cubeSize, fieldValue);
                     let c = edgeMiddleVertex(edges[trianglePoints[triangleIndex + 2]], x, y, z, cubeSize, fieldValue);
-                    trianglePositions.push(...a);
-                    trianglePositions.push(...b);
-                    trianglePositions.push(...c);
+                    trianglePositions.push(...a, ...b, ...c);
 
                     colors.push(...color, ...color, ...color);
 

@@ -33,7 +33,7 @@ function mathInput(event, index) {
         equationString = equationString[0] + "-(" + equationString[1] + ")"
         equationList.value[index] = {
             equationString: equationString,
-            fieldValue: math.evaluate("f(x, y) =" + equationString),
+            fieldValue: math.evaluate("f(x, y, z) =" + equationString),
             color: [255, 0, 0, 255],
         }
 
@@ -48,8 +48,8 @@ function addEquation() {
     let equationString = "0";
     equationList.value.push({
         equationString: equationString,
-        fieldValue: math.evaluate("f(x, y) =" + equationString),
-        color: [255, 0, 0],
+        fieldValue: math.evaluate("f(x, y, z) =" + equationString),
+        color: [255, 0, 0, 255],
     })
 }
 

@@ -11,6 +11,7 @@ import { ref, reactive, onMounted } from "vue";
 import marchingCubes3d from "@/modules/graphing/marchingCubes3d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m4 from  "@/modules/matrix/matrix4.js";
+import { equationList } from "../stores/equations.js";
 
 const canvas = ref(null);
 
@@ -102,16 +103,23 @@ function getCameraMatrix() {
     return m4.multiply(projectionMatrix, m4.inverse(cameraMatrix, 4));
 }
 
-function fieldValue(x, y, z) {
-    return x * y * z - 10;
-}
 
 function setChunks() {
     let start = performance.now();
-    marchingCubes = marchingCubes3d(-radius, radius, -radius, radius, -radius, radius, radius/10, [0, 255, 0], fieldValue);
-    console.log(performance.now() - start);
+    marchingCubes = { "trianglePositions": [], "colors": [], "normals": []};
+
+    for (let i = 0; i < equationList.value.length; i++) {
+        let graphColor = equationList.value[i].color;
+        let graphFunction = equationList.value[i].fieldValue;
+        let marchingCubesResult = marchingCubes3d(-radius/2, radius/2, -radius/2, radius/2, -radius/2, radius/2, radius/15, graphColor, graphFunction);
+        marchingCubes.trianglePositions = marchingCubes.trianglePositions.concat(marchingCubesResult.trianglePositions);
+        marchingCubes.colors = marchingCubes.colors.concat(marchingCubesResult.colors);
+        marchingCubes.normals = marchingCubes.normals.concat(marchingCubesResult.normals);
+    }
 
     console.log(marchingCubes)
+    console.log(performance.now() - start);
+
     
 
     //positions
@@ -165,6 +173,7 @@ function draw() {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
 
+    size = 4;
     type = gl.UNSIGNED_BYTE;
     normalize = true;
 
@@ -175,7 +184,9 @@ function draw() {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.normalBuffer);
 
+    size = 3;
     type = gl.FLOAT;
+    normalize = false;
 
     gl.vertexAttribPointer(programInfo.attributes.normalAttribute, size, type, normalize, stride, offset)
 
