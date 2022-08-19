@@ -2,11 +2,11 @@
     <nav class = "navbar">
         <ul class = "graphTypes">
             <li>
-                <a>2D Graph</a>
+                <a @click="changeGraphType('2d')">2D Graph</a>
 
             </li>
             <li>
-                <a>3D Graph</a>
+                <a @click="changeGraphType('3d')">3D Graph</a>
 
             </li>
         </ul>
@@ -15,6 +15,12 @@
 </template>
 
 <script setup>
+import { settings } from "@/stores/settings.js"
+
+function changeGraphType(type) {
+    console.log(settings);
+    settings.value.graphType = type;
+}
 
 </script>
 

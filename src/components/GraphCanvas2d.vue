@@ -1,5 +1,5 @@
 <template>
-    <canvas id = "canvas" ref = "canvas" @wheel = "scroll">
+    <canvas id = "canvas" ref = "canvas" @wheel = "scroll" @equationInput = "console.log(1)">
 
     </canvas>
 </template>
@@ -7,7 +7,7 @@
 <script setup>
 /* eslint-disable */
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineExpose} from "vue";
 import marchingSquares2d from "@/modules/graphing/marchingSquares2d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m3 from  "@/modules/matrix/matrix3.js";
@@ -31,7 +31,7 @@ let colors = []
 
 let programInfo = {};
 
-
+defineExpose({setChunks})
 
 onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
@@ -46,6 +46,11 @@ onMounted(async () => {
 
     window.addEventListener("mouseup", function(event) {
         mousePressed = false;
+    });
+
+    window.addEventListener("resize", function(event) {
+        scaleY = scaleX * canvas.value.clientWidth / canvas.value.clientHeight;
+        setChunks()
     });
 
     canvas.value.addEventListener("mousemove", function(event) {
@@ -130,6 +135,7 @@ function setChunks() {
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
         let graphFunction = equationList.value[i].fieldValue;
+        
         let marchingSquaresResult = marchingSquares2d(-translationX - maxX, -translationX + maxX, -translationY - maxY, -translationY + maxY, maxX/50, graphColor, graphFunction);
         positions = positions.concat(marchingSquaresResult.linePositions)
         colors = colors.concat(marchingSquaresResult.colors)

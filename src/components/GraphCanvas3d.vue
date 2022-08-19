@@ -21,8 +21,11 @@ let mousePressed = ref(false);
 
 //spherical coordinates of camera
 let radius = 100;
+
+let epsilon = 0.01;
+
 let theta = 0;
-let phi = 0;
+let phi = epsilon;
 
 let aspect = 0;
 
@@ -46,12 +49,20 @@ onMounted(async () => {
         mousePressed = false;
     });
 
+    window.addEventListener("resize", function(event) {
+        aspect = canvas.value.width / canvas.value.height;
+    });
+
     canvas.value.addEventListener("mousemove", function(event) {
         if (mousePressed) {
             event.preventDefault();
 
-            phi += 2 * (event.movementX / canvas.value.width);
-            theta += 2 * (event.movementY / canvas.value.height);
+            theta -= 2 * (event.movementX / canvas.value.width);
+            phi -= 2 * (event.movementY / canvas.value.height);
+
+            phi = Math.min(phi, Math.PI - epsilon);
+            phi = Math.max(phi, epsilon);
+
         }
     });
 
@@ -90,7 +101,8 @@ onMounted(async () => {
 })
 
 function getCameraPosition() {
-    return [radius * Math.cos(theta) * Math.cos(phi), radius * Math.sin(theta), radius * Math.cos(theta) * Math.sin(phi)]
+    //return [radius * Math.cos(theta) * Math.cos(phi), radius * Math.sin(theta), radius * Math.cos(theta) * Math.sin(phi)]
+    return [radius * Math.sin(phi) * Math.cos(theta), radius * Math.sin(phi) * Math.sin(theta), radius * Math.cos(phi)]
 }
 
 function getCameraMatrix() {

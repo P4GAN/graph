@@ -1,8 +1,9 @@
 <template>
     <div class = "pageWrapper">
         <NavbarTop/>
-        <EquationEditorSidebar/>
-        <GraphCanvas3d/>
+        <EquationEditorSidebar @equationInput = "updateGraph"/>
+        <GraphCanvas2d ref = "graph" v-if="settings.graphType == '2d'"/>
+        <GraphCanvas3d ref = "graph" v-else-if="settings.graphType == '3d'"/>
         <SettingsMenu v-if="settings.settingsMode"/>
     </div>
 </template>
@@ -16,8 +17,14 @@ import SettingsMenu from './components/SettingsMenu.vue'
 
 import { settings } from './stores/settings.js'
 
+import { ref } from "vue";
 
-console.log(settings.value.settingsMode)
+let graph = ref()
+
+function updateGraph() {
+    graph.value.setChunks();
+}
+
 </script>
 
 <style>

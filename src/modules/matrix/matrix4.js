@@ -292,10 +292,10 @@ export function subtract(a, b) {
 //TODO FIX CAMERA BREAKING WHEN POINTING UP
 export function lookAt(cameraPosition, target) {
     let difference = subtract(cameraPosition, target);
-    let up = [0, 1, 0];
+    let up = [0, 0, 1];
 
     let zAxis = normalizeVector(difference); //z axis is normal vector pointing from camera to target
-    let xAxis = normalizeVector(cross(up, zAxis)); //x axis perpendicular to z axis and up, normalised to length 1
+    let xAxis = normalizeVector(cross(up, zAxis)); //x axis perpendicular to z axis and up
 
 
     let yAxis = cross(zAxis, xAxis); //y axis perpendicular to x axis and z axis, automatically has length 1

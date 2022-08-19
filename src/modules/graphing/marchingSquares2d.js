@@ -122,6 +122,7 @@ export default function marchingSquares2d(startX, endX, startY, endY, squareSize
         }
 
     }
+
     return { "linePositions": linePositions, "colors": colors};
 }
 
