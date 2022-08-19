@@ -43,7 +43,7 @@ function mathInput(event, index) {
         equationString = equationString.split("=");
         equationString = equationString[0] + "-(" + equationString[1] + ")";
         let functionString = "f(x, y) = ";
-        if (settings.graphType == "2d") {
+        if (settings.graphType == "3d") {
             functionString = "f(x, y, z) = ";
         }
         console.log(equationString);
@@ -52,6 +52,11 @@ function mathInput(event, index) {
     }
     catch(err) {
         console.error("invalid equation")
+        let functionString = "f(x, y) = 0";
+        if (settings.graphType == "3d") {
+            functionString = "f(x, y, z) = 0";
+        }
+        equationList.value[index].fieldValue = functionString
     }
     
 }
