@@ -56,7 +56,7 @@ function mathInput(event, index) {
         if (settings.graphType == "3d") {
             functionString = "f(x, y, z) = 0";
         }
-        equationList.value[index].fieldValue = functionString
+        equationList.value[index].fieldValue = math.evaluate(functionString)
     }
     
 }
