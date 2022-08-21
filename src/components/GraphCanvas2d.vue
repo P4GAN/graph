@@ -1,5 +1,5 @@
 <template>
-    <canvas id = "canvas" ref = "canvas" @wheel = "scroll" @equationInput = "console.log(1)">
+    <canvas id = "canvas" ref = "canvas" @wheel = "scroll">
 
     </canvas>
 </template>
@@ -7,7 +7,7 @@
 <script setup>
 /* eslint-disable */
 
-import { ref, onMounted, defineExpose} from "vue";
+import { ref, onMounted } from "vue";
 import marchingSquares2d from "@/modules/graphing/marchingSquares2d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m3 from  "@/modules/matrix/matrix3.js";
@@ -25,6 +25,9 @@ let scaleY = 0.1;
 let translationX = 0;
 let translationY = 0;
 let angle = 0;
+
+let scaleHigh = 1;
+let scaleLow = 0.01;
 
 let positions = []
 let colors = []
@@ -49,7 +52,9 @@ onMounted(async () => {
     });
 
     window.addEventListener("resize", function(event) {
-        scaleY = scaleX * canvas.value.clientWidth / canvas.value.clientHeight;
+        canvas.value.width = canvas.value.clientWidth;
+        canvas.value.height = canvas.value.clientHeight;
+        scaleY = scaleX * canvas.value.width / canvas.value.height;
         setChunks()
     });
 
@@ -227,6 +232,8 @@ function scroll(event) {
 
     translationX += newX - x;
     translationY += newY - y ;
+
+    
 
     setChunks();
 

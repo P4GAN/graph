@@ -1,17 +1,27 @@
 <template>
-    <div class = "blurBackground"></div>
+    <div class = "blurBackground" @click="exitSettings"></div>
     <div class = "settingsMenu">
-
+        <h2>Settings</h2>
     </div>
 </template>
 
 <script setup>
+
+import { settings } from "@/stores/settings.js"
+
+function exitSettings() {
+    settings.value.settingsMode = false;
+}
 
 </script>
 
 <style>
     :root {
         font-size: 20px;
+    }
+
+    h1 {
+        text-align: center;
     }
 </style>
 

@@ -35,6 +35,8 @@ let marchingCubes = {};
 
 let programInfo = {};
 
+defineExpose({setChunks})
+
 onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
@@ -151,7 +153,7 @@ function setChunks() {
 function draw() {
     gl.viewport(0, 0, canvas.value.width, canvas.value.height);
 
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to white, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     //gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things

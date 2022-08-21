@@ -1,6 +1,4 @@
 import { ref } from "vue";
 
-export const equationList = ref([
-
-])
+export const equationList = ref([])
 

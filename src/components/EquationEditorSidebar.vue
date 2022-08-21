@@ -4,20 +4,21 @@
             <input type="color" class="color" value="#e66465" @input="(event) => changeColor(event, index)">
             <math-field
                 class = "equation"
+                virtual-keyboard-mode = "manual"
                 @input = "(event) => mathInput(event, index)" > 
-                
             </math-field>
-            <div class = "deleteEquation" @click="deleteEquation(index)">
-                <svg width="45" height="45" viewBox="0 0 48 48" fill="none">
-                    <rect width="48" height="48" fill="white" fill-opacity="0.01"/><path d="M14 14L34 34" stroke="#333" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M14 34L34 14" stroke="#333" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <div class = "deleteEquation" @click="deleteEquation(index);">
+                <svg width="40" height="40">
+                    <line stroke-width="1" stroke-linecap="undefined" stroke-linejoin="undefined" y2="30" x2="30" y1="10" x1="10" stroke="#000" fill="none"/>
+                    <line stroke-width="1" stroke-linecap="undefined" stroke-linejoin="undefined" y2="30" x2="10" y1="10" x1="30" stroke="#000" fill="none"/>
                 </svg> 
             </div>
         </div>
         <div class = "addEquation" @click="addEquation">
-            <svg width="45" height="45" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16"> 
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/> 
-            </svg>  
+            <svg width="40" height="40">
+                <line stroke-width="2" stroke-linecap="undefined" stroke-linejoin="undefined" y2="20" x2="30" y1="20" x1="10" stroke="#000" fill="none"/>
+                <line stroke-width="2" stroke-linecap="undefined" stroke-linejoin="undefined" y2="30" x2="20" y1="10" x1="20" stroke="#000" fill="none"/>
+            </svg> 
         </div>
     </div>
 
@@ -38,12 +39,16 @@ function mathInput(event, index) {
 
     try {
         let equationString = event.target.getValue("ascii-math");
+        equationList.value[index].equationString = equationString;
         equationString = equationString.replaceAll("⋅", "*");
         equationString = equationString.replaceAll("?", ")");
+        if (!equationString.includes("=")) {
+            equationString = "y = " + equationString;
+        }
         equationString = equationString.split("=");
         equationString = equationString[0] + "-(" + equationString[1] + ")";
         let functionString = "f(x, y) = ";
-        if (settings.graphType == "3d") {
+        if (settings.value.graphType == "3d") {
             functionString = "f(x, y, z) = ";
         }
         console.log(equationString);
@@ -51,9 +56,9 @@ function mathInput(event, index) {
         emit("equationInput");
     }
     catch(err) {
-        console.error("invalid equation")
+        console.error("invalid equation", err)
         let functionString = "f(x, y) = 0";
-        if (settings.graphType == "3d") {
+        if (settings.value.graphType == "3d") {
             functionString = "f(x, y, z) = 0";
         }
         equationList.value[index].fieldValue = math.evaluate(functionString)
@@ -71,20 +76,21 @@ function changeColor(event, index) {
 }
 
 function addEquation() {
-    let equationString = "0";
-    let functionString = "f(x, y) = "
-    if (settings.graphType == "2d") {
-        functionString = "f(x, y, z) = "
+    let functionString = "f(x, y) = 0"
+    if (settings.value.graphType == "3d") {
+        functionString = "f(x, y, z) = 0"
     }
     equationList.value.push({
-        equationString: equationString,
-        fieldValue: math.evaluate(functionString + equationString),
+        equationString: "0",
+        fieldValue: math.evaluate(functionString),
         color: [255, 0, 0, 255],
     })
 }
 
 function deleteEquation(index) {
+    console.log(index);
     equationList.value.splice(index, 1);
+    emit("equationInput");
 }
 
 </script>
@@ -141,8 +147,8 @@ function deleteEquation(index) {
 
 .equation {
     width: 290px;
-    height: 50px;
     margin-left: 5px;
+    padding: 5px 5px 0px 5px;
 }
 
 .deleteEquation {

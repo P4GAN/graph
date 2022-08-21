@@ -34,3 +34,8 @@ git commit -m "commit message"
 
 git subtree push --prefix dist origin gh-pages
 ```
+
+### Credits
+
+UI Icons:
+https://github.com/google/material-design-icons
