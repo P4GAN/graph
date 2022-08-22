@@ -1,7 +1,6 @@
 <template>
-    <canvas id = "canvas" ref = "canvas" @wheel = "scroll">
-
-    </canvas>
+    <canvas id = "canvas" ref = "canvas"></canvas>
+    <canvas id = "textCanvas" ref = "textCanvas" @wheel = "scroll"></canvas>
 </template>
 
 <script setup>
@@ -13,10 +12,14 @@ import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate
 import * as m3 from  "@/modules/matrix/matrix3.js";
 import { equationList } from "@/stores/equations.js";
 import { math } from "@/modules/math.js";
+import { transformVector } from "../modules/matrix/matrix3.js";
 
 const canvas = ref(null);
+const textCanvas = ref(null)
 
 let gl = null;
+
+let context = null;
 
 let mousePressed = false;
 
@@ -32,6 +35,9 @@ let scaleLow = 0.01;
 let positions = []
 let colors = []
 
+let textPositions = [];
+let textStrings = [];
+
 let programInfo = {};
 
 defineExpose({setChunks})
@@ -40,10 +46,13 @@ onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
 
+    textCanvas.value.width = textCanvas.value.clientWidth;
+    textCanvas.value.height = textCanvas.value.clientHeight;
+
     scaleX = 0.1;
     scaleY = 0.1 * canvas.value.width / canvas.value.height;
 
-    canvas.value.addEventListener("mousedown", function(event) {
+    textCanvas.value.addEventListener("mousedown", function(event) {
         mousePressed = true;
     });
 
@@ -58,7 +67,7 @@ onMounted(async () => {
         setChunks()
     });
 
-    canvas.value.addEventListener("mousemove", function(event) {
+    textCanvas.value.addEventListener("mousemove", function(event) {
         if (mousePressed) {
             event.preventDefault();
 
@@ -72,6 +81,8 @@ onMounted(async () => {
 
 
     gl = canvas.value.getContext("webgl");
+
+    context = textCanvas.value.getContext("2d");
 
     let vertexShaderSource = await fetch("shaders/graph2d.vert").then(response => response.text());
     let fragmentShaderSource = await fetch("shaders/graph2d.frag").then(response => response.text());
@@ -127,13 +138,35 @@ function setChunks() {
     let maxY = 1/scaleY;
     positions = [];
     colors = [];
-    for (let x = Math.floor(-translationX - maxX); x < -translationX + maxX; x += 1) {
-        positions.push(x, -translationY - maxY, x, -translationY + maxY)
-        colors.push(0, 0, 0, 100, 0, 0, 0, 100)
+    textPositions = [];
+    textStrings = [];
+    let increment = 0.1 / Math.pow(10, Math.floor(Math.log10(scaleX)));
+    let roundedX = Math.floor((-translationX)/increment) * increment;
+    let roundedY = Math.floor((-translationY)/increment) * increment;
+    for (let x = roundedX -15 * increment; x < roundedX + 15 * increment; x += increment) {
+
+        positions.push(x, -translationY - maxY, x, -translationY + maxY);
+        colors.push(0, 0, 0, 100, 0, 0, 0, 100);
+
+        let clipSpacePos = transformVector(getCameraMatrix(), [x, 0, 1]);
+        let pixelX = (clipSpacePos[0] *  0.5 + 0.5) * textCanvas.value.width;
+        let pixelY = (clipSpacePos[1] * -0.5 + 0.5) * textCanvas.value.height;
+
+        textPositions.push([pixelX, pixelY]);
+        let decimalPlaces = Math.max(0, -Math.log10(increment));
+        textStrings.push(x.toFixed(decimalPlaces));
     }
-    for (let y = Math.floor(-translationY - maxY); y < -translationY + maxY; y += 1) {
-        positions.push(-translationX - maxX, y, -translationX + maxX, y)
-        colors.push(0, 0, 0, 100, 0, 0, 0, 100)
+    for (let y = roundedY -15 * increment; y < roundedY + 15 * increment; y += increment) {
+        positions.push(-translationX - maxX, y, -translationX + maxX, y);
+        colors.push(0, 0, 0, 100, 0, 0, 0, 100);
+
+        let clipSpacePos = transformVector(getCameraMatrix(), [0, y, 1]);
+        let pixelX = (clipSpacePos[0] *  0.5 + 0.5) * textCanvas.value.width;
+        let pixelY = (clipSpacePos[1] * -0.5 + 0.5) * textCanvas.value.height;
+
+        textPositions.push([pixelX, pixelY])
+        let decimalPlaces = Math.max(0, -Math.log10(increment));
+        textStrings.push(y.toFixed(decimalPlaces));    
     }
     positions.push(-translationX - maxX, 0, -translationX + maxX, 0, 0, -translationY - maxY, 0, -translationY + maxY);
     colors.push(0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255);
@@ -169,6 +202,8 @@ function draw() {
     gl.clearColor(1, 1, 1, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
     gl.useProgram(programInfo.program);
 
     gl.enableVertexAttribArray(programInfo.attributes.positionAttribute);
@@ -199,6 +234,10 @@ function draw() {
     let primitiveType = gl.LINES;
     let count = positions.length / 2;
     gl.drawArrays(primitiveType, offset, count);
+
+    for (let i = 0; i < textPositions.length; i++) {
+        context.fillText(textStrings[i], textPositions[i][0], textPositions[i][1])
+    }
 
     requestAnimationFrame(draw);
 }
@@ -252,6 +291,15 @@ function scroll(event) {
     height: calc(100% - 50px);
     position: fixed;
 
+}
+
+#textCanvas {
+    top: 50px;
+    left: 350px;
+    width: calc(100% - 350px);
+    height: calc(100% - 50px);
+    position: fixed;
+    z-index: 2;
 }
 
 </style>

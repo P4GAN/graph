@@ -1,7 +1,17 @@
 <template>
-    <div class = "blurBackground" @click="exitSettings"></div>
-    <div class = "settingsMenu">
-        <h2>Settings</h2>
+    <div class = "blurBackground" @click="exitShare"></div>
+    <div class = "shareMenu">
+        <h1>Import/Export Graph</h1>
+        <div class = "importExportContainer">
+            <div class = "import">
+                <h4>Import</h4>
+
+            </div>
+            <div class = "export">
+                <h4>Export</h4>
+
+            </div>
+        </div>
     </div>
 </template>
 
@@ -9,8 +19,8 @@
 
 import { settings } from "@/stores/settings.js"
 
-function exitSettings() {
-    settings.value.settingsMode = false;
+function exitShare() {
+    settings.value.shareMode = false;
 }
 
 </script>
@@ -20,11 +30,16 @@ function exitSettings() {
         font-size: 20px;
     }
 
+
 </style>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h1 {
+    text-align: center;
+}
+
+h4 {
     text-align: center;
 }
 
@@ -41,7 +56,7 @@ h1 {
     background-color: rgba(100, 100, 100, 0.5);
 }
 
-.settingsMenu {
+.shareMenu {
     width: 600px;
     height: 400px;
 
@@ -56,6 +71,19 @@ h1 {
 
     background-color: white;
 
+}
+
+.importExportContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+.import {
+    flex: 1;
+}
+
+.export {
+    flex: 1;
 }
 
 </style>

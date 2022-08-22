@@ -141,6 +141,7 @@ function deleteEquation(index) {
 }
 
 .color {
+    margin-top: 4px;
     width: 45px;
     height: 45px;
 }
@@ -153,6 +154,7 @@ function deleteEquation(index) {
 
 .deleteEquation {
     display: inline;
+    margin-top: 5px;
 }
 
 </style>

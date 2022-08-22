@@ -4,6 +4,8 @@
         <EquationEditorSidebar @equationInput = "updateGraph"/>
         <GraphCanvas2d ref = "graph" v-if="settings.graphType == '2d'"/>
         <GraphCanvas3d ref = "graph" v-else-if="settings.graphType == '3d'"/>
+        <TutorialMenu v-if="settings.tutorialMode"/>
+        <ShareMenu v-if="settings.shareMode"/>
         <SettingsMenu v-if="settings.settingsMode"/>
     </div>
 </template>
@@ -18,6 +20,8 @@ import SettingsMenu from './components/SettingsMenu.vue'
 import { settings } from './stores/settings.js'
 
 import { ref } from "vue";
+import TutorialMenu from './components/TutorialMenu.vue'
+import ShareMenu from './components/ShareMenu.vue'
 
 let graph = ref()
 
