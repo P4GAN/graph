@@ -133,7 +133,6 @@ function getCameraMatrix() {
 }
 
 function setChunks() {
-    let start = performance.now();
     let maxX = 1/scaleX;
     let maxY = 1/scaleY;
     positions = [];
@@ -173,8 +172,12 @@ function setChunks() {
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
         let graphFunction = equationList.value[i].fieldValue;
-        
+
+            let start = performance.now();
+
         let marchingSquaresResult = marchingSquares2d(-translationX - maxX, -translationX + maxX, -translationY - maxY, -translationY + maxY, maxX/50, graphColor, graphFunction);
+            console.log(performance.now() - start);
+
         positions = positions.concat(marchingSquaresResult.linePositions)
         colors = colors.concat(marchingSquaresResult.colors)
     }
@@ -183,7 +186,6 @@ function setChunks() {
 
     console.log(colors)
 
-    console.log(performance.now() - start);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);
 

@@ -5,11 +5,12 @@
         <div class = "importExportContainer">
             <div class = "import">
                 <h4>Import</h4>
-
+                <input type = "file" ref = "fileElement" @change = "uploadEquations"/>
+                <button @click = "uploadEquation">Submit</button>
             </div>
             <div class = "export">
                 <h4>Export</h4>
-
+                <button class = "download" @click="downloadEquations('graph')">Click to download graph</button>
             </div>
         </div>
     </div>
@@ -17,10 +18,40 @@
 
 <script setup>
 
+import { ref, defineEmits } from "vue"
+
 import { settings } from "@/stores/settings.js"
+import { equationList } from "@/stores/equations.js"
+
+let fileElement = ref(null);
+
+const emit = defineEmits(["uploadEquations"])
 
 function exitShare() {
     settings.value.shareMode = false;
+}
+
+
+function uploadEquations() {
+    let jsonFile = fileElement.value.files[0];
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        for (let i = 0; i < e.target.result.length; i++) {
+            equationList[i] = e.target.result.length[i];
+        }
+        emit("uploadEquations");
+    }
+    reader.readAsText(jsonFile);
+}
+
+function downloadEquations(fileName){
+    let dataStream = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(equationList.value));
+    let downloadElement = document.createElement('a');
+    downloadElement.setAttribute("href", dataStream);
+    downloadElement.setAttribute("download", fileName + ".json");
+    document.body.appendChild(downloadElement); 
+    downloadElement.click();
+    downloadElement.remove();
 }
 
 </script>

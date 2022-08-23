@@ -129,6 +129,7 @@ function setChunks() {
         marchingCubes.trianglePositions = marchingCubes.trianglePositions.concat(marchingCubesResult.trianglePositions);
         marchingCubes.colors = marchingCubes.colors.concat(marchingCubesResult.colors);
         marchingCubes.normals = marchingCubes.normals.concat(marchingCubesResult.normals);
+
     }
 
     console.log(marchingCubes)
