@@ -63,6 +63,8 @@ onMounted(async () => {
     window.addEventListener("resize", function(event) {
         canvas.value.width = canvas.value.clientWidth;
         canvas.value.height = canvas.value.clientHeight;
+        textCanvas.value.width = textCanvas.value.clientWidth;
+        textCanvas.value.height = textCanvas.value.clientHeight;
         scaleY = scaleX * canvas.value.width / canvas.value.height;
         setChunks()
     });

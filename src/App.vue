@@ -26,6 +26,7 @@ import ShareMenu from './components/ShareMenu.vue'
 let graph = ref()
 
 function updateGraph() {
+    console.log("test");
     graph.value.setChunks();
 }
 

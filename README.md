@@ -37,5 +37,11 @@ git subtree push --prefix dist origin gh-pages
 
 ### Credits
 
-UI Icons:
+**UI Icons:**
 https://github.com/google/material-design-icons
+
+lib/oojs-ui/themes/mediawiki/images/icons/
+* Authors: https://phabricator.wikimedia.org/diffusion/GOJU/browse/master/AUTHORS.txt
+* Permission:  https://phabricator.wikimedia.org/diffusion/GOJU/browse/master/LICENSE-MIT
+
+http://evil-icons.io/

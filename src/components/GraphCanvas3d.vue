@@ -52,6 +52,8 @@ onMounted(async () => {
     });
 
     window.addEventListener("resize", function(event) {
+        canvas.value.width = canvas.value.clientWidth;
+        canvas.value.height = canvas.value.clientHeight;
         aspect = canvas.value.width / canvas.value.height;
     });
 
@@ -129,25 +131,10 @@ function setChunks() {
         marchingCubes.trianglePositions = marchingCubes.trianglePositions.concat(marchingCubesResult.trianglePositions);
         marchingCubes.colors = marchingCubes.colors.concat(marchingCubesResult.colors);
         marchingCubes.normals = marchingCubes.normals.concat(marchingCubesResult.normals);
-
     }
 
     console.log(marchingCubes)
     console.log(performance.now() - start);
-
-    
-
-    //positions
-    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.trianglePositions), gl.STATIC_DRAW);
-
-    //colors
-    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(marchingCubes.colors), gl.STATIC_DRAW);
-
-    //normals
-    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
 
 }
 
@@ -173,6 +160,7 @@ function draw() {
     gl.enableVertexAttribArray(programInfo.attributes.positionAttribute);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.trianglePositions), gl.STATIC_DRAW);
 
     // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
     let size = 3;          // 3 components per iteration
@@ -187,6 +175,7 @@ function draw() {
     gl.enableVertexAttribArray(programInfo.attributes.colorAttribute);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(marchingCubes.colors), gl.STATIC_DRAW);
 
     size = 4;
     type = gl.UNSIGNED_BYTE;
@@ -198,6 +187,7 @@ function draw() {
     gl.enableVertexAttribArray(programInfo.attributes.normalAttribute);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(marchingCubes.normals), gl.STATIC_DRAW);
 
     size = 3;
     type = gl.FLOAT;
@@ -211,6 +201,29 @@ function draw() {
     let primitiveType = gl.TRIANGLES;
     let count = marchingCubes.trianglePositions.length / 3;
     gl.drawArrays(primitiveType, offset, count);
+
+
+    //Drawing axes
+    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-radius, 0, 0, radius, 0, 0, 0, -radius, 0, 0, radius, 0, 0, 0, -radius, 0, 0, radius]), gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(programInfo.attributes.positionAttribute, size, type, normalize, stride, offset)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array([0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255]), gl.STATIC_DRAW);
+
+    size = 4;
+    type = gl.UNSIGNED_BYTE;
+    normalize = true;
+    
+    gl.vertexAttribPointer(programInfo.attributes.colorAttribute, size, type, normalize, stride, offset)
+
+    console.log(radius)
+
+    primitiveType = gl.LINES;
+    count = 6;
+    gl.drawArrays(primitiveType, offset, count);
+
 
     requestAnimationFrame(draw);
 

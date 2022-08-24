@@ -5,7 +5,7 @@
             <math-field
                 class = "equation"
                 virtual-keyboard-mode = "manual"
-                @input = "(event) => mathInput(event, index)" > 
+                @input = "(event) => mathInput(event, index)" > {{ equationList[index].equationString }}
             </math-field>
             <div class = "deleteEquation" @click="deleteEquation(index);">
                 <svg width="40" height="40">
@@ -81,7 +81,7 @@ function addEquation() {
         functionString = "f(x, y, z) = 0"
     }
     equationList.value.push({
-        equationString: "0",
+        equationString: "",
         fieldValue: math.evaluate(functionString),
         color: [255, 0, 0, 255],
     })

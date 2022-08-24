@@ -36,12 +36,15 @@ function uploadEquations() {
     let jsonFile = fileElement.value.files[0];
     let reader = new FileReader();
     reader.onload = function(e) {
-        for (let i = 0; i < e.target.result.length; i++) {
-            equationList[i] = e.target.result.length[i];
+        let jsonObject = JSON.parse(e.target.result)
+        for (let i = 0; i < jsonObject.length; i++) {
+            equationList.value[i] = jsonObject[i];
         }
         emit("uploadEquations");
     }
     reader.readAsText(jsonFile);
+
+    console.log(equationList);
 }
 
 function downloadEquations(fileName){
