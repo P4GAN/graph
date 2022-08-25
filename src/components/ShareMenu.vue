@@ -6,7 +6,6 @@
             <div class = "import">
                 <h4>Import</h4>
                 <input type = "file" ref = "fileElement" @change = "uploadEquations"/>
-                <button @click = "uploadEquation">Submit</button>
             </div>
             <div class = "export">
                 <h4>Export</h4>
@@ -21,7 +20,7 @@
 import { ref, defineEmits } from "vue"
 
 import { settings } from "@/stores/settings.js"
-import { equationList } from "@/stores/equations.js"
+import { equationList, updateEquation } from "@/stores/equations.js"
 
 let fileElement = ref(null);
 
@@ -39,6 +38,7 @@ function uploadEquations() {
         let jsonObject = JSON.parse(e.target.result)
         for (let i = 0; i < jsonObject.length; i++) {
             equationList.value[i] = jsonObject[i];
+            updateEquation(equationList.value[i].equationString, i)
         }
         emit("uploadEquations");
     }

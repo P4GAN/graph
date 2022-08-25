@@ -7,12 +7,14 @@
 <script setup>
 /* eslint-disable */
 
+//importing from vue and from local modules
 import { ref, reactive, onMounted } from "vue";
 import marchingCubes3d from "@/modules/graphing/marchingCubes3d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m4 from  "@/modules/matrix/matrix4.js";
 import { equationList } from "../stores/equations.js";
 
+//initialising variables
 const canvas = ref(null);
 
 let gl = null;
@@ -21,9 +23,7 @@ let mousePressed = ref(false);
 
 //spherical coordinates of camera
 let radius = 100;
-
 let epsilon = 0.01;
-
 let theta = 0;
 let phi = epsilon;
 
@@ -31,18 +31,24 @@ let aspect = 0;
 
 let cameraPosition = [0, 0, 100];
 
-let marchingCubes = {};
+let marchingCubes = {
+    "trianglePositions": [],
+    "colors": [],
+    "normals": [],
+};
 
 let programInfo = {};
 
 defineExpose({setChunks})
 
+//when component is added to the page
 onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
 
     aspect = canvas.value.width / canvas.value.height;
 
+    //handle mouse click, move, and window rezise event
     canvas.value.addEventListener("mousedown", function(event) {
         mousePressed = true;
     });
@@ -57,6 +63,7 @@ onMounted(async () => {
         aspect = canvas.value.width / canvas.value.height;
     });
 
+    //when mouse moved, change spherical coordinates, while clamping to specific range
     canvas.value.addEventListener("mousemove", function(event) {
         if (mousePressed) {
             event.preventDefault();
@@ -72,6 +79,7 @@ onMounted(async () => {
 
     gl = canvas.value.getContext("webgl");
 
+    //fetch shaders and create webgl program
     let vertexShaderSource = await fetch("shaders/graph3d.vert").then(response => response.text());
     let fragmentShaderSource = await fetch("shaders/graph3d.frag").then(response => response.text());
 
@@ -104,11 +112,12 @@ onMounted(async () => {
 
 })
 
+//converts spherical coordinates to cartesian coordinates
 function getCameraPosition() {
-    //return [radius * Math.cos(theta) * Math.cos(phi), radius * Math.sin(theta), radius * Math.cos(theta) * Math.sin(phi)]
     return [radius * Math.sin(phi) * Math.cos(theta), radius * Math.sin(phi) * Math.sin(theta), radius * Math.cos(phi)]
 }
 
+//gets transformation matrix with camera centered at origin
 function getCameraMatrix() {
     let projectionMatrix = m4.perspective(Math.PI / 3, aspect, 1, 2000);
 
@@ -119,15 +128,13 @@ function getCameraMatrix() {
     return m4.multiply(projectionMatrix, m4.inverse(cameraMatrix, 4));
 }
 
-
 function setChunks() {
     let start = performance.now();
-    marchingCubes = { "trianglePositions": [], "colors": [], "normals": []};
 
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
         let graphFunction = equationList.value[i].fieldValue;
-        let marchingCubesResult = marchingCubes3d(-radius/2, radius/2, -radius/2, radius/2, -radius/2, radius/2, radius/15, graphColor, graphFunction);
+        let marchingCubesResult = marchingCubes3d(-radius/2, radius/2, -radius/2, radius/2, -radius/2, radius/2, radius/10, graphColor, graphFunction);
         marchingCubes.trianglePositions = marchingCubes.trianglePositions.concat(marchingCubesResult.trianglePositions);
         marchingCubes.colors = marchingCubes.colors.concat(marchingCubesResult.colors);
         marchingCubes.normals = marchingCubes.normals.concat(marchingCubesResult.normals);
@@ -218,7 +225,14 @@ function draw() {
     
     gl.vertexAttribPointer(programInfo.attributes.colorAttribute, size, type, normalize, stride, offset)
 
-    console.log(radius)
+    gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), gl.STATIC_DRAW);
+
+    size = 3;
+    type = gl.FLOAT;
+    normalize = false;
+    
+    gl.vertexAttribPointer(programInfo.attributes.normalAttribute, size, type, normalize, stride, offset)
 
     primitiveType = gl.LINES;
     count = 6;

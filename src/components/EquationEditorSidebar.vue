@@ -1,6 +1,6 @@
 <template>
-    <div class = "sidebar">
-        <div class = "equationBox" v-for="(item, index) in equationList" v-bind:key="index">
+    <div class = "sidebar" ref = "sidebar">
+        <div class = "equationBox" v-for="(item, index) in equationList" v-bind:key="item.id">
             <input type="color" class="color" value="#e66465" @input="(event) => changeColor(event, index)">
             <math-field
                 class = "equation"
@@ -27,43 +27,22 @@
 
 <script setup>
 import { ref, reactive, onMounted, defineEmits} from "vue"
-import { equationList } from "@/stores/equations.js"
+import { equationList, updateEquation } from "@/stores/equations.js"
 import { settings } from "@/stores/settings.js"
 import "mathlive"
 import math from "@/modules/math.js";
 
 const emit = defineEmits(["equationInput"])
+let id = 0;
+let sidebar = ref(null)
+
 
 function mathInput(event, index) {
-    console.log(equationList)
 
-    try {
-        let equationString = event.target.getValue("ascii-math");
-        equationList.value[index].equationString = equationString;
-        equationString = equationString.replaceAll("⋅", "*");
-        equationString = equationString.replaceAll("?", ")");
-        if (!equationString.includes("=")) {
-            equationString = "y = " + equationString;
-        }
-        equationString = equationString.split("=");
-        equationString = equationString[0] + "-(" + equationString[1] + ")";
-        let functionString = "f(x, y) = ";
-        if (settings.value.graphType == "3d") {
-            functionString = "f(x, y, z) = ";
-        }
-        console.log(equationString);
-        equationList.value[index].fieldValue = math.evaluate(functionString + equationString);
-        emit("equationInput");
-    }
-    catch(err) {
-        console.error("invalid equation", err)
-        let functionString = "f(x, y) = 0";
-        if (settings.value.graphType == "3d") {
-            functionString = "f(x, y, z) = 0";
-        }
-        equationList.value[index].fieldValue = math.evaluate(functionString)
-    }
-    
+    let equationString = event.target.getValue("ascii-math");
+    updateEquation(equationString, index);
+    emit("equationInput");
+
 }
 
 function changeColor(event, index) {
@@ -81,10 +60,13 @@ function addEquation() {
         functionString = "f(x, y, z) = 0"
     }
     equationList.value.push({
+        id: id++,
         equationString: "",
         fieldValue: math.evaluate(functionString),
         color: [255, 0, 0, 255],
     })
+    console.log(sidebar.value.scrollHeight);
+    sidebar.value.scrollTop = sidebar.value.scrollHeight + 100;
 }
 
 function deleteEquation(index) {
@@ -92,6 +74,7 @@ function deleteEquation(index) {
     equationList.value.splice(index, 1);
     emit("equationInput");
 }
+
 
 </script>
 
@@ -113,7 +96,7 @@ function deleteEquation(index) {
     z-index: 1;
     top: 50px;
     left: 0;
-    height: 100%;
+    height: calc(100% - 50px);
     width: 350px;
     position: fixed;
 
@@ -136,6 +119,7 @@ function deleteEquation(index) {
     overflow-y: hidden;
     padding: 5px 5px 5px 10px;
     width: 100%;
+    min-height: 55px;
 
     display: flex;
 }

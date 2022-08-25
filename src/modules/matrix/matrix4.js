@@ -231,6 +231,9 @@ export function cofactor(matrix, row, column, size) {
 
 //finds inverse of using adjugate / determinant
 export function inverse(matrix, size) {
+    if (size == 1) {
+        return matrix[0];
+    }
     let minorMatrix = [];
     let matrixDeterminant = determinant(matrix, size);
 
@@ -247,6 +250,9 @@ export function inverse(matrix, size) {
 
 //return determinant of square matrix
 export function determinant(matrix, size) {
+    if (size == 1) {
+        return matrix[0];
+    }
     if (size == 2) {
         return (matrix[0] * matrix[3] - matrix[1] * matrix[2]);
     }
