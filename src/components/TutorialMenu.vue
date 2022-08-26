@@ -16,7 +16,7 @@
 import { ref, onMounted } from "vue"
 import { settings } from "@/stores/settings.js"
 
-const imageSource = ref('/assets/2d_graph_help.png')
+const imageSource = ref('./assets/2d_graph_help.png')
 
 function exitTutorial() {
     settings.value.tutorialMode = false;

@@ -249,7 +249,9 @@ export function inverse(matrix, size) {
 }
 
 //return determinant of square matrix
+//input matrix and matrix size, output determinant
 export function determinant(matrix, size) {
+    //base cases
     if (size == 1) {
         return matrix[0];
     }
@@ -258,13 +260,14 @@ export function determinant(matrix, size) {
     }
     else {
         let determinantValue = 0; 
+        //loop through diagonal
         for (let column = 0; column < size; column++) {
             let sign = (-1) ** column;
+            //recursive call
             determinantValue += sign * matrix[column + size * 0] * determinant(cofactor(matrix, 0, column, size), size - 1);
 
         }
         return determinantValue;
-
     }
 }
 

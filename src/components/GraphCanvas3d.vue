@@ -31,6 +31,7 @@ let aspect = 0;
 
 let cameraPosition = [0, 0, 100];
 
+//marching cubes object containing position, colors and normals
 let marchingCubes = {
     "trianglePositions": [],
     "colors": [],
@@ -43,12 +44,14 @@ let exit = false
 
 defineExpose({setChunks})
 
+//handle window resize event
 function resizeWindow() {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
     aspect = canvas.value.width / canvas.value.height;
 }
 
+//when mouse moved, change spherical coordinates to rotate around origin
 function mouseMoved(event) {
     if (mousePressed) {
         event.preventDefault();
@@ -58,7 +61,6 @@ function mouseMoved(event) {
 
         phi = Math.min(phi, Math.PI - epsilon);
         phi = Math.max(phi, epsilon);
-
     }
 }
 
@@ -116,10 +118,12 @@ onMounted(async () => {
 
     setChunks();
 
+    //start draw cycle
     requestAnimationFrame(draw);
 
 })
 
+//remove event listeners on destroy
 onBeforeUnmount(() => {
     canvas.value.removeEventListener("mousedown", function(event) {
         mousePressed = true;
@@ -152,6 +156,7 @@ function getCameraMatrix() {
     return m4.multiply(projectionMatrix, m4.inverse(cameraMatrix, 4));
 }
 
+//sets marching cubes object (containing positions, colors and normals) for all equations
 function setChunks() {
     let start = performance.now();
 
@@ -172,9 +177,9 @@ function setChunks() {
 
     console.log(marchingCubes)
     console.log(performance.now() - start);
-
 }
 
+//draw loop
 function draw() {
     if (exit) {
         return;
@@ -281,11 +286,11 @@ function draw() {
 
 
 
-//listen for events
-
+//listen for scroll event
 function scroll(event) {
     event.preventDefault();
 
+    //multiple zoom by 1.1 or 0.9 depending on scroll direction and change camera distance
     let zoomScale = 1;
     if (event.deltaY > 0) {
         zoomScale = 1.1 

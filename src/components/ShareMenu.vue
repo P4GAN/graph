@@ -30,7 +30,7 @@ function exitShare() {
     settings.value.shareMode = false;
 }
 
-
+//read file from input, parse and input into equation store
 function uploadEquations() {
     let jsonFile = fileElement.value.files[0];
     let reader = new FileReader();
@@ -47,6 +47,7 @@ function uploadEquations() {
     console.log(equationList);
 }
 
+//download json file containing equations
 function downloadEquations(fileName){
     let dataStream = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(equationList.value));
     let downloadElement = document.createElement('a');

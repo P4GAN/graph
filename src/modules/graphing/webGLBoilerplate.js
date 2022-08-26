@@ -1,3 +1,4 @@
+//creates, compiles and links shader to WebGL given shader string
 function createShader(gl, type, source) {
     let shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -12,6 +13,7 @@ function createShader(gl, type, source) {
     gl.deleteShader(shader);
 }
 
+//initialises WebGL program given shaders
 function createProgram(gl, vertexShader, fragmentShader) {
     let program = gl.createProgram();
     gl.attachShader(program, vertexShader);

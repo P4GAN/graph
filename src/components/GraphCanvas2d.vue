@@ -30,9 +30,6 @@ let translationX = 0;
 let translationY = 0;
 let angle = 0;
 
-let scaleHigh = 1;
-let scaleLow = 0.01;
-
 let positions = []
 let colors = []
 
@@ -45,6 +42,7 @@ let exit = false;
 
 defineExpose({setChunks})
 
+//when window is resized, recompute canvas width height and scale and recalculate graphs
 function resizeWindow() {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
@@ -54,6 +52,7 @@ function resizeWindow() {
     setChunks()
 }
 
+//when mouse moved, change x and y positions and recalculate graph
 function mouseMoved(event) {
     if (mousePressed) {
         event.preventDefault();
@@ -62,10 +61,10 @@ function mouseMoved(event) {
         translationY -= (2 * event.movementY / canvas.value.height / scaleY);
 
         setChunks();
-
     }
 }
 
+//when initialised
 onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
     canvas.value.height = canvas.value.clientHeight;
@@ -76,6 +75,7 @@ onMounted(async () => {
     scaleX = 0.1;
     scaleY = 0.1 * canvas.value.width / canvas.value.height;
 
+    //add event listeners
     textCanvas.value.addEventListener("mousedown", function(event) {
         mousePressed = true;
     });
@@ -90,10 +90,12 @@ onMounted(async () => {
 
     exit = false;
 
+    //webgl initalisation
     gl = canvas.value.getContext("webgl");
 
     context = textCanvas.value.getContext("2d");
 
+    //fetch shaders from server, compile and set up program
     let vertexShaderSource = await fetch("shaders/graph2d.vert").then(response => response.text());
     let fragmentShaderSource = await fetch("shaders/graph2d.frag").then(response => response.text());
 
@@ -102,6 +104,7 @@ onMounted(async () => {
 
     let shaderProgram = createProgram(gl, vertexShader, fragmentShader);
 
+    //set webgl attributes, uniforms and buffers
     programInfo = {
         program: shaderProgram,
         attributes: {
@@ -118,16 +121,13 @@ onMounted(async () => {
         }
     }
     
-
     setChunks();
 
-    //gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
-    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
+    //begin draw loop
     requestAnimationFrame(draw);
-
 })
 
+//remove event listeners and stop loop when component is destroyed
 onBeforeUnmount(() => {
     textCanvas.value.removeEventListener("mousedown", function(event) {
         mousePressed = true;
@@ -144,6 +144,7 @@ onBeforeUnmount(() => {
     exit = true;
 })
 
+//gets transformation matrices for camera
 function getCameraMatrix() {
     /*transformation should be
 
@@ -159,6 +160,7 @@ function getCameraMatrix() {
     return cameraMatrix;
 }
 
+//draws grid lines, axes and all equation graphs
 function setChunks() {
     let maxX = 1/scaleX;
     let maxY = 1/scaleY;
@@ -169,6 +171,7 @@ function setChunks() {
     let increment = 0.1 / Math.pow(10, Math.floor(Math.log10(scaleX)));
     let roundedX = Math.floor((-translationX)/increment) * increment;
     let roundedY = Math.floor((-translationY)/increment) * increment;
+    //grid lines and numbers
     if (settings.value.gridLines) {
         for (let x = roundedX -15 * increment; x < roundedX + 15 * increment; x += increment) {
 
@@ -196,7 +199,7 @@ function setChunks() {
             textStrings.push(y.toFixed(decimalPlaces));    
         }
     }
-
+    //axis
     if (settings.value.xAxis) { 
         positions.push(-translationX - maxX, 0, -translationX + maxX, 0);
         colors.push(0, 0, 0, 255, 0, 0, 0, 255);
@@ -206,14 +209,12 @@ function setChunks() {
         colors.push(0, 0, 0, 255, 0, 0, 0, 255);
     }
 
+    //graphs
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
         let graphFunction = equationList.value[i].fieldValue;
 
-            let start = performance.now();
-
         let marchingSquaresResult = marchingSquares2d(-translationX - maxX, -translationX + maxX, -translationY - maxY, -translationY + maxY, maxX/50, graphColor, graphFunction);
-            console.log(performance.now() - start);
 
         positions = positions.concat(marchingSquaresResult.linePositions)
         colors = colors.concat(marchingSquaresResult.colors)
@@ -233,6 +234,7 @@ function setChunks() {
     gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW);
 }
 
+//draw loop
 function draw() {
 
     if (exit) {
@@ -282,22 +284,23 @@ function draw() {
         context.fillText(textStrings[i], textPositions[i][0], textPositions[i][1])
     }
 
+    //next draw frame
     requestAnimationFrame(draw);
 }
 
-//listen for events
-
+//handle scroll event, zoom in and out
 function scroll(event) {
     event.preventDefault();
 
-    let rect = canvas.value.getBoundingClientRect();
-
+    //get mouse position
     let mouseX = event.offsetX
     let mouseY = canvas.value.height - event.offsetY;
 
+    //gets clip position (normalise from -1 to 1 from left to right in canvas), and converts to world coordinates
     let [clipX, clipY] = m3.transformVector(m3.projection(canvas.value.width, canvas.value.height), [mouseX, mouseY, 1]);
     let [x, y] = m3.transformVector(m3.inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
+    //sets zoom scale, and multiplies scale by zoom, with minimum constraint
     let zoomScale = 1;
     if (event.deltaY < 0) {
         zoomScale = 1.1 
@@ -310,15 +313,14 @@ function scroll(event) {
     scaleY *= zoomScale;
     scaleY = Math.max(0, scaleY);
 
+    //finds how much mouse position has moved, and translates back accordingly
     let [newX, newY] = m3.transformVector(m3.inverse(getCameraMatrix(), 3), [clipX, clipY, 1])
 
     translationX += newX - x;
     translationY += newY - y ;
 
-    
-
+    //redraw graph
     setChunks();
-
 }
 
 

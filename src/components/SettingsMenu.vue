@@ -31,8 +31,6 @@ import { settings } from "@/stores/settings.js"
 
 const emit = defineEmits(["updateSettings"])
 
-
-
 function exitSettings() {
     settings.value.settingsMode = false;
 }

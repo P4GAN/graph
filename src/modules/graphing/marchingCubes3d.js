@@ -1,3 +1,4 @@
+//lookup tables for vertex positions, edges, and triangulation configurations for marching cubes algorithm
 let vertexPositions = [
     [0, 0, 0],
     [1, 0, 0],
@@ -288,10 +289,9 @@ function cross(a, b) {
     return [a[1] * b[2] - a[2] * b[1],
             a[2] * b[0] - a[0] * b[2],
             a[0] * b[1] - a[1] * b[0]];
-    //(ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bz)
 }
 
-//returns 4D normal vector of v, unit vector in direction v
+//returns normal vector of v, unit vector in direction v
 function normalizeVector(v) {
     let length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 
@@ -303,7 +303,7 @@ function normalizeVector(v) {
     }
 }
 
-//returns difference of 4D vectors b - a
+//returns difference of 3D vectors b - a
 function subtract(a, b) {
     return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
@@ -329,12 +329,6 @@ function edgeMiddleVertex(edge, x, y, z, cubeSize, fieldValue) {
     return [x + cubeSize * interpolate(vertexPositions[edge[0]][0], vertexPositions[edge[1]][0], valueA, valueB, isovalue), 
             y + cubeSize * interpolate(vertexPositions[edge[0]][1], vertexPositions[edge[1]][1], valueA, valueB, isovalue), 
             z + cubeSize * interpolate(vertexPositions[edge[0]][2], vertexPositions[edge[1]][2], valueA, valueB, isovalue)];
-    /*
-        return [x + cubeSize * (vertexPositions[edge[0]][0] + vertexPositions[edge[1]][0]) / 2, 
-                y + cubeSize * (vertexPositions[edge[0]][1] + vertexPositions[edge[1]][1]) / 2, 
-                z + cubeSize * (vertexPositions[edge[0]][2] + vertexPositions[edge[1]][2]) / 2 ];
-    */
-
 }
 
 //returns normal vector to triangle given 3 vector corners
@@ -345,13 +339,16 @@ function triangleNormal(a, b, c) {
     return normalizeVector(cross(edgeBC, edgeAB));
 }
 
+//Marching cubes creates a triangular mesh from a scalar field, generating an isosurface at the boundary between 
+//where the field is positive and negative. Here the field is given by a user defined function.
+//Takes input of starting and ending coordinates, cube size (resolution), color and a user defined function
+//Returns an object containing trianglePositions, colors, and normals
 export default function marchingCubes3d(startX, endX, startY, endY, startZ, endZ, cubeSize, color, fieldValue) {
-    let isovalue = 0;
-
     let trianglePositions = []; 
     let colors = [];
     let normals = [];
 
+    //for each cube in the region
     for (let x = startX; x < endX - cubeSize; x += cubeSize) {
         for (let y = startY; y < endY - cubeSize; y += cubeSize) {
             for (let z = startZ; z < endZ - cubeSize; z += cubeSize) {
@@ -371,15 +368,19 @@ export default function marchingCubes3d(startX, endX, startY, endY, startZ, endZ
                  *  |/               |/     |/
                  *  v0------e0-------v1     O--x
                  */
+
+                //assign a 8 bit number based on which of the 8 vertices in the cube have field values greater than 0
                 let cubeType = 0;
 
                 for (let i = 0; i < 8; i++) {
                     let vertex = [vertexPositions[i][0] * cubeSize + x, vertexPositions[i][1] * cubeSize + y, vertexPositions[i][2] * cubeSize + z];
-                    if (fieldValue(vertex[0], vertex[1], vertex[2]) >= isovalue) {
+                    if (fieldValue(vertex[0], vertex[1], vertex[2]) >= 0) {
                         cubeType += Math.pow(2, i);
                     }
                 }
-                
+
+                //8 bit number is used to find triangulation for cube configuration, which is used to find edges
+                //Edges are then used to find points, which are then triangulated, with colors and normals added
                 let trianglePoints = triangulationTable[cubeType];
                 for (let triangleIndex = 0; triangleIndex < trianglePoints.length; triangleIndex += 3) {
                     let a = edgeMiddleVertex(edges[trianglePoints[triangleIndex]], x, y, z, cubeSize, fieldValue);
@@ -397,6 +398,7 @@ export default function marchingCubes3d(startX, endX, startY, endY, startZ, endZ
         }
     }
 
+    //returns object with positions, colors and normals
     let marchingCubesResult = { "trianglePositions": trianglePositions, "colors": colors, "normals": normals }
     return marchingCubesResult;
 }

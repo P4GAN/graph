@@ -40,12 +40,14 @@
 import { settings } from "@/stores/settings.js"
 import { equationList } from "@/stores/equations.js"
 
+//change from 2d to 3d and vice verca
 function changeGraphType(type) {
     console.log(settings);
     equationList.value = [];
     settings.value.graphType = type;
 }
 
+//toggle opening menus
 function toggleTutorialMenu() {
     settings.value.tutorialMode = !settings.value.tutorialMode;
 }

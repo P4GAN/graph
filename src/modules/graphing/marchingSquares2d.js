@@ -43,7 +43,6 @@ export default function marchingSquares2d(startX, endX, startY, endY, squareSize
                 squareType += 8;
             }
 
-
             let bottomMiddle = [interpolate(x, x + squareSize, bottomLeft, bottomRight, isovalue), y]
             let rightMiddle = [x + squareSize, interpolate(y, y + squareSize, bottomRight, topRight, isovalue)]
             let topMiddle = [interpolate(x, x + squareSize, topLeft, topRight, isovalue), y + squareSize]

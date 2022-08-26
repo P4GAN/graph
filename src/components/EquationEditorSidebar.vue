@@ -37,17 +37,14 @@ const emit = defineEmits(["equationInput"])
 let id = 0;
 let sidebar = ref(null)
 
-
+//when user enters input in equation editor, the program updates the equation function, and tells the graphing module to regraph the equation
 function mathInput(event, index) {
-
     let equationString = event.target.getValue("ascii-math");
     updateEquation(equationString, index);
     emit("equationInput");
-
-    console.log(equationList.value)
-
 }
 
+//gets hex color code from color picker, and converts to RGB array, which is stored, then tells graphing module to regraph
 function changeColor(event, index) {
     let colorHex = event.target.value;
     let r = parseInt(colorHex.slice(1, 3), 16)
@@ -57,10 +54,12 @@ function changeColor(event, index) {
     emit("equationInput");
 }
 
+//RGB array to hex code
 function colorToHex(color) {
     return "#" + color[0].toString(16).padStart(2, "0") + color[1].toString(16).padStart(2, "0") + color[2].toString(16).padStart(2, "0");
 }
 
+//adds new equation, with random color, and function returning 0
 function addEquation() {
     let functionString = "f(x, y) = 0"
     if (settings.value.graphType == "3d") {
@@ -76,6 +75,7 @@ function addEquation() {
     sidebar.value.scrollTop = sidebar.value.scrollHeight - 100;
 }
 
+//removes equation
 function deleteEquation(index) {
     console.log(index);
     equationList.value.splice(index, 1);
