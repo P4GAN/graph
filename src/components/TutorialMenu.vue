@@ -3,10 +3,10 @@
     <div class = "tutorialMenu">
         <h2>User Guide</h2>
         <div class="navigation">
-            <button class="navigationButton" @click="imageSource = '/assets/2d_graph_help.png'"> 1 </button>
-            <button class="navigationButton" @click="imageSource = '/assets/editing_equation_help.png'"> 2 </button>
-            <button class="navigationButton" @click="imageSource = '/assets/control_2d_help.png'"> 3 </button>
-            <button class="navigationButton" @click="imageSource = '/assets/control_3d_help.png'"> 4 </button>
+            <button class="navigationButton" @click="imageSource = './assets/2d_graph_help.png'"> 1 </button>
+            <button class="navigationButton" @click="imageSource = './assets/editing_equation_help.png'"> 2 </button>
+            <button class="navigationButton" @click="imageSource = './assets/control_2d_help.png'"> 3 </button>
+            <button class="navigationButton" @click="imageSource = './assets/control_3d_help.png'"> 4 </button>
         </div>
         <img :src="imageSource" class="guide"/>
     </div>

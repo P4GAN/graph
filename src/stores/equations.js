@@ -19,6 +19,8 @@ export function updateEquation(equationString, index) {
         if (settings.value.graphType == "3d") {
             functionString = "f(x, y, z) = ";
         }
+        equationString = equationString.replaceAll(" ", "");
+
         console.log(equationString);
         equationList.value[index].fieldValue = math.evaluate(functionString + equationString);
     }
