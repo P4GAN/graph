@@ -8,7 +8,7 @@
 /* eslint-disable */
 
 //importing from vue and from local modules
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
 import marchingCubes3d from "@/modules/graphing/marchingCubes3d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m4 from  "@/modules/matrix/matrix4.js";
@@ -39,7 +39,28 @@ let marchingCubes = {
 
 let programInfo = {};
 
+let exit = false
+
 defineExpose({setChunks})
+
+function resizeWindow() {
+    canvas.value.width = canvas.value.clientWidth;
+    canvas.value.height = canvas.value.clientHeight;
+    aspect = canvas.value.width / canvas.value.height;
+}
+
+function mouseMoved(event) {
+    if (mousePressed) {
+        event.preventDefault();
+
+        theta -= 2 * (event.movementX / canvas.value.width);
+        phi -= 2 * (event.movementY / canvas.value.height);
+
+        phi = Math.min(phi, Math.PI - epsilon);
+        phi = Math.max(phi, epsilon);
+
+    }
+}
 
 //when component is added to the page
 onMounted(async () => {
@@ -57,25 +78,12 @@ onMounted(async () => {
         mousePressed = false;
     });
 
-    window.addEventListener("resize", function(event) {
-        canvas.value.width = canvas.value.clientWidth;
-        canvas.value.height = canvas.value.clientHeight;
-        aspect = canvas.value.width / canvas.value.height;
-    });
+    window.addEventListener("resize", resizeWindow);
 
     //when mouse moved, change spherical coordinates, while clamping to specific range
-    canvas.value.addEventListener("mousemove", function(event) {
-        if (mousePressed) {
-            event.preventDefault();
+    canvas.value.addEventListener("mousemove", mouseMoved);
 
-            theta -= 2 * (event.movementX / canvas.value.width);
-            phi -= 2 * (event.movementY / canvas.value.height);
-
-            phi = Math.min(phi, Math.PI - epsilon);
-            phi = Math.max(phi, epsilon);
-
-        }
-    });
+    exit = false
 
     gl = canvas.value.getContext("webgl");
 
@@ -112,6 +120,22 @@ onMounted(async () => {
 
 })
 
+onBeforeUnmount(() => {
+    canvas.value.removeEventListener("mousedown", function(event) {
+        mousePressed = true;
+    });
+
+    window.removeEventListener("mouseup", function(event) {
+        mousePressed = false;
+    });
+
+    window.removeEventListener("resize", resizeWindow);
+
+    canvas.value.removeEventListener("mousemove", mouseMoved);
+
+    exit = true;
+})
+
 //converts spherical coordinates to cartesian coordinates
 function getCameraPosition() {
     return [radius * Math.sin(phi) * Math.cos(theta), radius * Math.sin(phi) * Math.sin(theta), radius * Math.cos(phi)]
@@ -119,7 +143,7 @@ function getCameraPosition() {
 
 //gets transformation matrix with camera centered at origin
 function getCameraMatrix() {
-    let projectionMatrix = m4.perspective(Math.PI / 3, aspect, 1, 2000);
+    let projectionMatrix = m4.perspective(Math.PI / 3, aspect, 0.01, 1000000);
 
     cameraPosition = getCameraPosition();
 
@@ -130,6 +154,12 @@ function getCameraMatrix() {
 
 function setChunks() {
     let start = performance.now();
+
+    marchingCubes = {
+        "trianglePositions": [],
+        "colors": [],
+        "normals": [],
+    };
 
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
@@ -146,6 +176,10 @@ function setChunks() {
 }
 
 function draw() {
+    if (exit) {
+        return;
+    }
+
     gl.viewport(0, 0, canvas.value.width, canvas.value.height);
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to white, fully opaque

@@ -2,12 +2,21 @@
     <div class = "blurBackground" @click="exitTutorial"></div>
     <div class = "tutorialMenu">
         <h2>User Guide</h2>
+        <div class="navigation">
+            <button class="navigationButton" @click="imageSource = '/assets/2d_graph_help.png'"> 1 </button>
+            <button class="navigationButton" @click="imageSource = '/assets/editing_equation_help.png'"> 2 </button>
+            <button class="navigationButton" @click="imageSource = '/assets/control_2d_help.png'"> 3 </button>
+            <button class="navigationButton" @click="imageSource = '/assets/control_3d_help.png'"> 4 </button>
+        </div>
+        <img :src="imageSource" class="guide"/>
     </div>
 </template>
 
 <script setup>
-
+import { ref, onMounted } from "vue"
 import { settings } from "@/stores/settings.js"
+
+const imageSource = ref('/assets/2d_graph_help.png')
 
 function exitTutorial() {
     settings.value.tutorialMode = false;
@@ -20,14 +29,14 @@ function exitTutorial() {
         font-size: 20px;
     }
 
-    h1 {
-        text-align: center;
-    }
 </style>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
+h2 {
+    text-align: center;
+    margin: 10px;
+}
 .blurBackground {
     width: 100%;
     height: 100%;
@@ -56,6 +65,30 @@ function exitTutorial() {
 
     background-color: white;
 
+}
+
+.navigation {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    margin-bottom: 10px;
+}
+.navigationButton {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    border-radius: 50%;
+    border: 5px solid black;
+    background-color: rgba(220, 220, 220, 1);
+}
+
+.navigationButton:hover {
+    background-color: rgb(150, 150, 150);
+}
+
+.guide {
+    width: 550px;
+    height: 270px;
 }
 
 </style>

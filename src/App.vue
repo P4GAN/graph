@@ -6,7 +6,7 @@
         <GraphCanvas3d ref = "graph" v-else-if="settings.graphType == '3d'"/>
         <TutorialMenu v-if="settings.tutorialMode"/>
         <ShareMenu v-if="settings.shareMode" @uploadEquations = "updateGraph"/>
-        <SettingsMenu v-if="settings.settingsMode"/>
+        <SettingsMenu v-if="settings.settingsMode" @updateSettings = "updateGraph"/>
     </div>
 </template>
 

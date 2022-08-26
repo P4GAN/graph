@@ -10,7 +10,7 @@ export function updateEquation(equationString, index) {
         equationList.value[index].equationString = equationString;
         equationString = equationString.replaceAll("⋅", "*");
         equationString = equationString.replaceAll("?", ")");
-        if (!equationString.includes("=") && !equationString.includes("y")) {
+        if (!equationString.includes("=") && !equationString.includes("y") && settings.value.graphType == "2d") {
             equationString = "y = " + equationString;
         }
         equationString = equationString.split("=");

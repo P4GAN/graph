@@ -1,11 +1,12 @@
 <template>
     <div class = "sidebar" ref = "sidebar">
         <div class = "equationBox" v-for="(item, index) in equationList" v-bind:key="item.id">
-            <input type="color" class="color" value="#e66465" @input="(event) => changeColor(event, index)">
+            <input type="color" class="color" :value="colorToHex(item.color)" @change="(event) => changeColor(event, index)">
             <math-field
                 class = "equation"
                 virtual-keyboard-mode = "manual"
-                @input = "(event) => mathInput(event, index)" > {{ equationList[index].equationString }}
+                @input = "(event) => mathInput(event, index)" 
+                v-on:keyup.enter="addEquation"> {{ equationList[index].equationString }}
             </math-field>
             <div class = "deleteEquation" @click="deleteEquation(index);">
                 <svg width="40" height="40">
@@ -43,6 +44,8 @@ function mathInput(event, index) {
     updateEquation(equationString, index);
     emit("equationInput");
 
+    console.log(equationList.value)
+
 }
 
 function changeColor(event, index) {
@@ -54,6 +57,10 @@ function changeColor(event, index) {
     emit("equationInput");
 }
 
+function colorToHex(color) {
+    return "#" + color[0].toString(16).padStart(2, "0") + color[1].toString(16).padStart(2, "0") + color[2].toString(16).padStart(2, "0");
+}
+
 function addEquation() {
     let functionString = "f(x, y) = 0"
     if (settings.value.graphType == "3d") {
@@ -63,10 +70,10 @@ function addEquation() {
         id: id++,
         equationString: "",
         fieldValue: math.evaluate(functionString),
-        color: [255, 0, 0, 255],
+        color: [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), 255],
     })
     console.log(sidebar.value.scrollHeight);
-    sidebar.value.scrollTop = sidebar.value.scrollHeight + 100;
+    sidebar.value.scrollTop = sidebar.value.scrollHeight - 100;
 }
 
 function deleteEquation(index) {
@@ -135,10 +142,24 @@ function deleteEquation(index) {
     margin-left: 5px;
     padding: 5px 5px 0px 5px;
 }
-
+.addEquation {
+    margin-top: 5px;
+    height: 40px;
+}
+.addEquation:hover {
+    border-radius: 50%;
+    background-color: rgb(200, 200, 200);
+}
 .deleteEquation {
     display: inline;
     margin-top: 5px;
+    margin-right: 5px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.deleteEquation:hover {
+    background-color: rgb(200, 200, 200);
 }
 
 </style>

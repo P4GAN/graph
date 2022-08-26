@@ -2,12 +2,36 @@
     <div class = "blurBackground" @click="exitSettings"></div>
     <div class = "settingsMenu">
         <h2>Settings</h2>
+        <div>
+            <input type="checkbox" v-model="settings.xAxis" @change="emit('updateSettings')" />
+            <label for="checkbox">x-axis</label>
+        </div>
+        <div>
+            <input type="checkbox" v-model="settings.yAxis" @change="emit('updateSettings')" />
+            <label for="checkbox">y-axis</label>
+        </div>
+        <div>
+            <input type="checkbox" v-model="settings.zAxis" @change="emit('updateSettings')" />
+            <label for="checkbox">z-axis (3d)</label>
+        </div>
+        <div>
+            <input type="checkbox" v-model="settings.gridLines" @change="emit('updateSettings')" />
+            <label for="checkbox">Grid lines (2d)</label>        
+        </div>
+
+
+
+
     </div>
 </template>
 
 <script setup>
-
+import { defineEmits } from "vue"
 import { settings } from "@/stores/settings.js"
+
+const emit = defineEmits(["updateSettings"])
+
+
 
 function exitSettings() {
     settings.value.settingsMode = false;

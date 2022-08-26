@@ -6,11 +6,12 @@
 <script setup>
 /* eslint-disable */
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import marchingSquares2d from "@/modules/graphing/marchingSquares2d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m3 from  "@/modules/matrix/matrix3.js";
 import { equationList } from "@/stores/equations.js";
+import { settings } from "@/stores/settings.js";
 import { math } from "@/modules/math.js";
 import { transformVector } from "../modules/matrix/matrix3.js";
 
@@ -40,7 +41,30 @@ let textStrings = [];
 
 let programInfo = {};
 
+let exit = false;
+
 defineExpose({setChunks})
+
+function resizeWindow() {
+    canvas.value.width = canvas.value.clientWidth;
+    canvas.value.height = canvas.value.clientHeight;
+    textCanvas.value.width = textCanvas.value.clientWidth;
+    textCanvas.value.height = textCanvas.value.clientHeight;
+    scaleY = scaleX * canvas.value.width / canvas.value.height;
+    setChunks()
+}
+
+function mouseMoved(event) {
+    if (mousePressed) {
+        event.preventDefault();
+
+        translationX += (2 * event.movementX / canvas.value.width / scaleX);
+        translationY -= (2 * event.movementY / canvas.value.height / scaleY);
+
+        setChunks();
+
+    }
+}
 
 onMounted(async () => {
     canvas.value.width = canvas.value.clientWidth;
@@ -60,27 +84,11 @@ onMounted(async () => {
         mousePressed = false;
     });
 
-    window.addEventListener("resize", function(event) {
-        canvas.value.width = canvas.value.clientWidth;
-        canvas.value.height = canvas.value.clientHeight;
-        textCanvas.value.width = textCanvas.value.clientWidth;
-        textCanvas.value.height = textCanvas.value.clientHeight;
-        scaleY = scaleX * canvas.value.width / canvas.value.height;
-        setChunks()
-    });
+    window.addEventListener("resize", resizeWindow);
 
-    textCanvas.value.addEventListener("mousemove", function(event) {
-        if (mousePressed) {
-            event.preventDefault();
+    textCanvas.value.addEventListener("mousemove", mouseMoved);
 
-            translationX += (2 * event.movementX / canvas.value.width / scaleX);
-            translationY -= (2 * event.movementY / canvas.value.height / scaleY);
-
-            setChunks();
-
-        }
-    });
-
+    exit = false;
 
     gl = canvas.value.getContext("webgl");
 
@@ -109,6 +117,7 @@ onMounted(async () => {
             colorBuffer: gl.createBuffer(),
         }
     }
+    
 
     setChunks();
 
@@ -117,6 +126,22 @@ onMounted(async () => {
 
     requestAnimationFrame(draw);
 
+})
+
+onBeforeUnmount(() => {
+    textCanvas.value.removeEventListener("mousedown", function(event) {
+        mousePressed = true;
+    });
+
+    window.removeEventListener("mouseup", function(event) {
+        mousePressed = false;
+    });
+
+    window.removeEventListener("resize", resizeWindow);
+
+    textCanvas.value.removeEventListener("mousemove", mouseMoved);
+
+    exit = true;
 })
 
 function getCameraMatrix() {
@@ -144,33 +169,43 @@ function setChunks() {
     let increment = 0.1 / Math.pow(10, Math.floor(Math.log10(scaleX)));
     let roundedX = Math.floor((-translationX)/increment) * increment;
     let roundedY = Math.floor((-translationY)/increment) * increment;
-    for (let x = roundedX -15 * increment; x < roundedX + 15 * increment; x += increment) {
+    if (settings.value.gridLines) {
+        for (let x = roundedX -15 * increment; x < roundedX + 15 * increment; x += increment) {
 
-        positions.push(x, -translationY - maxY, x, -translationY + maxY);
-        colors.push(0, 0, 0, 100, 0, 0, 0, 100);
+            positions.push(x, -translationY - maxY, x, -translationY + maxY);
+            colors.push(0, 0, 0, 100, 0, 0, 0, 100);
 
-        let clipSpacePos = transformVector(getCameraMatrix(), [x, 0, 1]);
-        let pixelX = (clipSpacePos[0] *  0.5 + 0.5) * textCanvas.value.width;
-        let pixelY = (clipSpacePos[1] * -0.5 + 0.5) * textCanvas.value.height;
+            let clipSpacePos = transformVector(getCameraMatrix(), [x, 0, 1]);
+            let pixelX = (clipSpacePos[0] *  0.5 + 0.5) * textCanvas.value.width;
+            let pixelY = (clipSpacePos[1] * -0.5 + 0.5) * textCanvas.value.height;
 
-        textPositions.push([pixelX, pixelY]);
-        let decimalPlaces = Math.max(0, -Math.log10(increment));
-        textStrings.push(x.toFixed(decimalPlaces));
+            textPositions.push([pixelX, pixelY]);
+            let decimalPlaces = Math.max(0, -Math.log10(increment));
+            textStrings.push(x.toFixed(decimalPlaces));
+        }
+        for (let y = roundedY -15 * increment; y < roundedY + 15 * increment; y += increment) {
+            positions.push(-translationX - maxX, y, -translationX + maxX, y);
+            colors.push(0, 0, 0, 100, 0, 0, 0, 100);
+
+            let clipSpacePos = transformVector(getCameraMatrix(), [0, y, 1]);
+            let pixelX = (clipSpacePos[0] *  0.5 + 0.5) * textCanvas.value.width;
+            let pixelY = (clipSpacePos[1] * -0.5 + 0.5) * textCanvas.value.height;
+
+            textPositions.push([pixelX, pixelY])
+            let decimalPlaces = Math.max(0, -Math.log10(increment));
+            textStrings.push(y.toFixed(decimalPlaces));    
+        }
     }
-    for (let y = roundedY -15 * increment; y < roundedY + 15 * increment; y += increment) {
-        positions.push(-translationX - maxX, y, -translationX + maxX, y);
-        colors.push(0, 0, 0, 100, 0, 0, 0, 100);
 
-        let clipSpacePos = transformVector(getCameraMatrix(), [0, y, 1]);
-        let pixelX = (clipSpacePos[0] *  0.5 + 0.5) * textCanvas.value.width;
-        let pixelY = (clipSpacePos[1] * -0.5 + 0.5) * textCanvas.value.height;
-
-        textPositions.push([pixelX, pixelY])
-        let decimalPlaces = Math.max(0, -Math.log10(increment));
-        textStrings.push(y.toFixed(decimalPlaces));    
+    if (settings.value.xAxis) { 
+        positions.push(-translationX - maxX, 0, -translationX + maxX, 0);
+        colors.push(0, 0, 0, 255, 0, 0, 0, 255);
     }
-    positions.push(-translationX - maxX, 0, -translationX + maxX, 0, 0, -translationY - maxY, 0, -translationY + maxY);
-    colors.push(0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255);
+    if (settings.value.yAxis) { 
+        positions.push(0, -translationY - maxY, 0, -translationY + maxY);
+        colors.push(0, 0, 0, 255, 0, 0, 0, 255);
+    }
+
     for (let i = 0; i < equationList.value.length; i++) {
         let graphColor = equationList.value[i].color;
         let graphFunction = equationList.value[i].fieldValue;
@@ -199,6 +234,10 @@ function setChunks() {
 }
 
 function draw() {
+
+    if (exit) {
+        return;
+    }
 
     gl.viewport(0, 0, canvas.value.width, canvas.value.height);
 
