@@ -3,12 +3,15 @@
     <div class = "tutorialMenu">
         <h2>User Guide</h2>
         <div class="navigation">
-            <button class="navigationButton" @click="imageSource = './assets/2d_graph_help.png'"> 1 </button>
-            <button class="navigationButton" @click="imageSource = './assets/editing_equation_help.png'"> 2 </button>
-            <button class="navigationButton" @click="imageSource = './assets/control_2d_help.png'"> 3 </button>
-            <button class="navigationButton" @click="imageSource = './assets/control_3d_help.png'"> 4 </button>
+            <button class="navigationButton" @click="imageIndex = 1"> 1 </button>
+            <button class="navigationButton" @click="imageIndex = 2"> 2 </button>
+            <button class="navigationButton" @click="imageIndex = 3"> 3 </button>
+            <button class="navigationButton" @click="imageIndex = 4"> 4 </button>
         </div>
-        <img :src="imageSource" class="guide"/>
+        <img v-show="imageIndex == 1" :src="'./assets/2d_graph_help.png'" class="guide"/>
+        <img v-show="imageIndex == 2" :src="'./assets/editing_equation_help.png'" class="guide"/>
+        <img v-show="imageIndex == 3" :src="'./assets/control_2d_help.png'" class="guide"/>
+        <img v-show="imageIndex == 4" :src="'./assets/control_3d_help.png'" class="guide"/>
     </div>
 </template>
 
@@ -16,7 +19,7 @@
 import { ref, onMounted } from "vue"
 import { settings } from "@/stores/settings.js"
 
-const imageSource = ref('./assets/2d_graph_help.png')
+let imageIndex = ref(1)
 
 function exitTutorial() {
     settings.value.tutorialMode = false;

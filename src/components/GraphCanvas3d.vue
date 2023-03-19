@@ -13,6 +13,7 @@ import marchingCubes3d from "@/modules/graphing/marchingCubes3d.js";
 import { createShader, createProgram } from "@/modules/graphing/webGLBoilerplate.js";
 import * as m4 from  "@/modules/matrix/matrix4.js";
 import { equationList } from "../stores/equations.js";
+import { settings } from "@/stores/settings";
 
 //initialising variables
 const canvas = ref(null);
@@ -248,15 +249,34 @@ function draw() {
     let count = marchingCubes.trianglePositions.length / 3;
     gl.drawArrays(primitiveType, offset, count);
 
+    let linePositions = [];//[-radius, 0, 0, radius, 0, 0, 0, -radius, 0, 0, radius, 0, 0, 0, -radius, 0, 0, radius];
+    let lineColors = [];//[0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255];
+    let lineNormals = [];//[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    if (settings.value.xAxis) {
+        linePositions.push(-radius, 0, 0, radius, 0, 0);
+        lineColors.push(0, 0, 0, 255, 0, 0, 0, 255)
+        lineNormals.push(0, 0, 0, 0, 0, 0)
+    }
+    if (settings.value.yAxis) {
+        linePositions.push(0, -radius, 0, 0, radius, 0);
+        lineColors.push(0, 0, 0, 255, 0, 0, 0, 255)
+        lineNormals.push(0, 0, 0, 0, 0, 0)
+    }
+    if (settings.value.zAxis) {
+        linePositions.push(0, 0, -radius, 0, 0, radius);
+        lineColors.push(0, 0, 0, 255, 0, 0, 0, 255)
+        lineNormals.push(0, 0, 0, 0, 0, 0)
+    }
 
     //Drawing axes
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-radius, 0, 0, radius, 0, 0, 0, -radius, 0, 0, radius, 0, 0, 0, -radius, 0, 0, radius]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(linePositions), gl.STATIC_DRAW);
 
     gl.vertexAttribPointer(programInfo.attributes.positionAttribute, size, type, normalize, stride, offset)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array([0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(lineColors), gl.STATIC_DRAW);
 
     size = 4;
     type = gl.UNSIGNED_BYTE;
@@ -265,7 +285,7 @@ function draw() {
     gl.vertexAttribPointer(programInfo.attributes.colorAttribute, size, type, normalize, stride, offset)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, programInfo.buffers.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineNormals), gl.STATIC_DRAW);
 
     size = 3;
     type = gl.FLOAT;
@@ -274,7 +294,7 @@ function draw() {
     gl.vertexAttribPointer(programInfo.attributes.normalAttribute, size, type, normalize, stride, offset)
 
     primitiveType = gl.LINES;
-    count = 6;
+    count = linePositions.length / 3;
     gl.drawArrays(primitiveType, offset, count);
 
 
